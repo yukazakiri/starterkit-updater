@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    excludePaths:
+        - tests
+    reportUnmatchedIgnoredErrors: true
+    parallel:
+        processTimeout: 300.0
+    memoryLimitFile: 1G

@@ -18,9 +18,9 @@ return [
     | - Livewire: https://github.com/laravel/livewire-starter-kit.git
     |
     */
-    'upstream_url'    => env('UPSTREAM_URL', 'https://github.com/laravel/vue-starter-kit.git'),
+    'upstream_url' => env('UPSTREAM_URL', 'https://github.com/laravel/vue-starter-kit.git'),
     'upstream_branch' => env('UPSTREAM_BRANCH', 'main'),
-    'local_branch'    => env('UPSTREAM_LOCAL_BRANCH', 'main'),
+    'local_branch' => env('UPSTREAM_LOCAL_BRANCH', 'main'),
 
     /*
     |--------------------------------------------------------------------------
@@ -57,7 +57,7 @@ return [
         // 'php artisan up',
     ],
 
-        /*
+    /*
     |--------------------------------------------------------------------------
     | Default Preset
     |--------------------------------------------------------------------------
@@ -67,8 +67,6 @@ return [
     |
     */
     'default_preset' => env('UPSTREAM_DEFAULT_PRESET', 'vue'),
-
-
 
     /*
     |--------------------------------------------------------------------------

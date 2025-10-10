@@ -38,18 +38,18 @@ Use the interactive setup command for quick configuration:
 
 ```bash
 # Interactive setup
-php artisan upstream:setup
+php artisan laravelplus:setup
 
 # Or specify your starter kit directly
-php artisan upstream:setup --preset=vue
-php artisan upstream:setup --preset=react
-php artisan upstream:setup --preset=livewire
+php artisan laravelplus:setup --preset=vue
+php artisan laravelplus:setup --preset=react
+php artisan laravelplus:setup --preset=livewire
 ```
 
 ### For Custom Repositories
 
 ```bash
-php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
+php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 ```
 
 ## Configuration
@@ -119,13 +119,13 @@ The recommended workflow is to check for updates first, then upgrade:
 
 ```bash
 # 1. Check if updates are available
-php artisan upstream:check
+php artisan laravelplus:check
 
 # 2. If updates are available, upgrade your project
-php artisan upstream:upgrade
+php artisan laravelplus:update
 
 # 3. Or create a pull request for safer updates
-php artisan upstream:upgrade --pr
+php artisan laravelplus:update --pr
 ```
 
 ### Quick Start Examples
@@ -133,49 +133,49 @@ php artisan upstream:upgrade --pr
 #### Vue Starter Kit
 ```bash
 # Setup for Vue starter kit
-php artisan upstream:setup --preset=vue
+php artisan laravelplus:setup --preset=vue
 
 # Check for updates
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Upgrade with updates
-php artisan upstream:upgrade
+php artisan laravelplus:update
 ```
 
 #### React Starter Kit
 ```bash
 # Setup for React starter kit
-php artisan upstream:setup --preset=react
+php artisan laravelplus:setup --preset=react
 
 # Check for updates
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Upgrade with updates
-php artisan upstream:upgrade
+php artisan laravelplus:update
 ```
 
 #### Livewire Starter Kit
 ```bash
 # Setup for Livewire starter kit
-php artisan upstream:setup --preset=livewire
+php artisan laravelplus:setup --preset=livewire
 
 # Check for updates
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Upgrade with updates
-php artisan upstream:upgrade
+php artisan laravelplus:update
 ```
 
 #### Custom Repository
 ```bash
 # Setup for custom repository
-php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
+php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 
 # Check for updates
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Upgrade with updates
-php artisan upstream:upgrade
+php artisan laravelplus:update
 ```
 
 ### Using Default Presets
@@ -197,10 +197,10 @@ With a default preset configured, you can simply run:
 
 ```bash
 # Check for updates (uses default preset automatically)
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Upgrade if updates are available
-php artisan upstream:upgrade
+php artisan laravelplus:update
 ```
 
 ## Pull Request Workflow
@@ -225,19 +225,19 @@ GITHUB_REPO=your_repo_name
 
 ```bash
 # Check for updates first
-php artisan upstream:check
+php artisan laravelplus:check
 
 # Create a PR with upstream updates
-php artisan upstream:upgrade --pr
+php artisan laravelplus:update --pr
 
 # Or use the direct PR command
-php artisan upstream:pr --test
+php artisan laravelplus:pr --test
 
 # Create PR with custom branch name
-php artisan upstream:pr --pr-branch=update-vue-starter-kit
+php artisan laravelplus:pr --pr-branch=update-vue-starter-kit
 
 # Create PR with custom title and body
-php artisan upstream:pr --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
+php artisan laravelplus:pr --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
 ```
 
 ### PR Workflow Benefits
@@ -253,43 +253,43 @@ php artisan upstream:pr --pr-title="Update from Vue starter kit" --pr-body="Sync
 #### Basic Sync
 
 ```bash
-php artisan upstream:sync
+php artisan laravelplus:sync
 ```
 
 #### Test Before Sync
 
 ```bash
-php artisan upstream:sync --test
+php artisan laravelplus:sync --test
 ```
 
 #### Dry Run (See What Would Happen)
 
 ```bash
-php artisan upstream:sync --dry-run
+php artisan laravelplus:sync --dry-run
 ```
 
 #### Use Rebase Strategy
 
 ```bash
-php artisan upstream:sync --strategy=rebase
+php artisan laravelplus:sync --strategy=rebase
 ```
 
 #### Override Upstream URL
 
 ```bash
-php artisan upstream:sync --upstream=https://github.com/other/repo.git
+php artisan laravelplus:sync --upstream=https://github.com/other/repo.git
 ```
 
 #### Skip Hooks
 
 ```bash
-php artisan upstream:sync --no-pre --no-post
+php artisan laravelplus:sync --no-pre --no-post
 ```
 
 #### Custom Remote Name
 
 ```bash
-php artisan upstream:sync --remote-name=upstream
+php artisan laravelplus:sync --remote-name=upstream
 ```
 
 ## Supported Laravel Starter Kits
@@ -376,22 +376,22 @@ https://username:token@github.com/user/repo.git
 
 ## Available Commands
 
-### `upstream:check`
+### `laravelplus:check`
 Check if there are updates available from upstream repository.
 
-### `upstream:upgrade`
+### `laravelplus:update`
 Upgrade your project with the latest changes from upstream (recommended).
 
-### `upstream:upgrade --pr`
+### `laravelplus:update --pr`
 Create a pull request with upstream updates (safer for production).
 
-### `upstream:sync`
+### `laravelplus:sync`
 Direct sync with upstream repository (merges directly to your branch).
 
-### `upstream:pr`
-Create a pull request with upstream updates (alternative to upgrade --pr).
+### `laravelplus:pr`
+Create a pull request with upstream updates (alternative to update --pr).
 
-### `upstream:setup`
+### `laravelplus:setup`
 Interactive setup wizard for configuring the package.
 
 ## Command Options
@@ -407,9 +407,9 @@ Interactive setup wizard for configuring the package.
 | `--branch=` | Override upstream branch |
 | `--local=` | Override local branch |
 | `--remote-name=` | Remote name to use (default: upstream) |
-| `--pr-branch=` | Override PR branch name (upstream:pr only) |
-| `--pr-title=` | Override PR title (upstream:pr only) |
-| `--pr-body=` | Override PR body (upstream:pr only) |
+| `--pr-branch=` | Override PR branch name (laravelplus:pr only) |
+| `--pr-title=` | Override PR title (laravelplus:pr only) |
+| `--pr-body=` | Override PR body (laravelplus:pr only) |
 
 ## Requirements
 

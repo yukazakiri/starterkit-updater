@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace LaravelPlus\LaravelUpdater\Console\Commands;
 
-use LaravelPlus\LaravelUpdater\Support\VersionControl;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use LaravelPlus\LaravelUpdater\Support\VersionControl;
+use Throwable;
 
 final class UpstreamUpgradeCommand extends Command
 {
-    protected $signature = 'upstream:upgrade
+    protected $signature = 'laravelplus:update
         {--pr : Create a pull request instead of direct merge}
         {--dry-run : Show what would happen without executing}
         {--test : Test configuration and connectivity before upgrade}
@@ -29,6 +30,8 @@ final class UpstreamUpgradeCommand extends Command
 
     public function handle(): int
     {
+        $this->displayLogo();
+
         $cfg = config('upstream');
 
         // Apply default preset if no specific configuration is set
@@ -36,18 +39,20 @@ final class UpstreamUpgradeCommand extends Command
 
         // Run tests if requested
         if ($this->option('test')) {
-            if (!$this->runTests($cfg)) {
+            if (! $this->runTests($cfg)) {
                 $this->error('❌ Tests failed. Aborting upgrade.');
+
                 return self::FAILURE;
             }
             $this->newLine();
         }
 
         // Check if updates are available first
-        if (!$this->option('dry-run')) {
+        if (! $this->option('dry-run')) {
             $this->info('🔍 Checking for available updates...');
-            if (!$this->hasUpdates($cfg)) {
+            if (! $this->hasUpdates($cfg)) {
                 $this->info('✅ You are already up to date! No updates to apply.');
+
                 return self::SUCCESS;
             }
             $this->newLine();
@@ -55,10 +60,20 @@ final class UpstreamUpgradeCommand extends Command
 
         // Route to appropriate command
         if ($this->option('pr')) {
-            return $this->createPullRequest($cfg);
-        } else {
-            return $this->directUpgrade($cfg);
+            return $this->createPullRequest();
         }
+
+        return $this->directUpgrade();
+
+    }
+
+    private function displayLogo(): void
+    {
+        $this->line('');
+        $this->line('<fg=blue>   ═══════════════════════════════════════════════════════════ </>');
+        $this->line('<fg=blue>   🚀 Laravel Updater - Keep your projects up to date!        </>');
+        $this->line('<fg=blue>   ═══════════════════════════════════════════════════════════ </>');
+        $this->line('');
     }
 
     private function hasUpdates(array $cfg): bool
@@ -74,28 +89,27 @@ final class UpstreamUpgradeCommand extends Command
 
         try {
             // Ensure remote exists and fetch latest
-            if (!$git->hasRemote($remoteName)) {
+            if (! $git->hasRemote($remoteName)) {
                 $upstreamUrl = (string) ($this->option('upstream') ?: $cfg['upstream_url']);
                 $git->run(['remote', 'add', $remoteName, $upstreamUrl]);
             }
-            
+
             $git->run(['fetch', $remoteName]);
 
             // Check if we're behind
             $result = $git->run(['rev-list', '--count', "$localBranch..$remoteName/$upstreamBranch"], throw: false);
-            return (int) trim($result) > 0;
-        } catch (\Throwable) {
+
+            return (int) mb_trim($result) > 0;
+        } catch (Throwable) {
             return true; // Assume updates available if we can't check
         }
     }
 
-    private function createPullRequest(array $cfg): int
+    private function createPullRequest(): int
     {
         $this->info('🚀 Creating pull request with upstream updates...');
-        
         // Call the PR command with the same options
-        $prCommand = new \LaravelPlus\LaravelUpdater\Console\Commands\UpstreamPrCommand();
-        
+        $prCommand = new UpstreamPrCommand();
         // Transfer options to PR command
         $options = [
             'dry-run' => $this->option('dry-run'),
@@ -111,7 +125,6 @@ final class UpstreamUpgradeCommand extends Command
             'pr-title' => $this->option('pr-title'),
             'pr-body' => $this->option('pr-body'),
         ];
-
         // Set options on the PR command
         foreach ($options as $key => $value) {
             if ($value !== null) {
@@ -122,13 +135,11 @@ final class UpstreamUpgradeCommand extends Command
         return $prCommand->handle();
     }
 
-    private function directUpgrade(array $cfg): int
+    private function directUpgrade(): int
     {
         $this->info('🚀 Upgrading with upstream updates...');
-        
         // Call the sync command with the same options
-        $syncCommand = new \LaravelPlus\LaravelUpdater\Console\Commands\UpstreamSyncCommand();
-        
+        $syncCommand = new UpstreamSyncCommand();
         // Transfer options to sync command
         $options = [
             'dry-run' => $this->option('dry-run'),
@@ -141,7 +152,6 @@ final class UpstreamUpgradeCommand extends Command
             'local' => $this->option('local'),
             'remote-name' => $this->option('remote-name'),
         ];
-
         // Set options on the sync command
         foreach ($options as $key => $value) {
             if ($value !== null) {
@@ -155,28 +165,28 @@ final class UpstreamUpgradeCommand extends Command
     private function applyDefaultPreset(array $cfg): array
     {
         // Check if we already have a specific upstream URL configured
-        if (!empty($cfg['upstream_url']) && $cfg['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
+        if (! empty($cfg['upstream_url']) && $cfg['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
             return $cfg;
         }
 
         // Check if we have a default preset configured
         $defaultPreset = $cfg['default_preset'] ?? null;
-        if (!$defaultPreset || !isset($cfg['presets'][$defaultPreset])) {
+        if (! $defaultPreset || ! isset($cfg['presets'][$defaultPreset])) {
             return $cfg;
         }
 
         // Apply the default preset configuration
         $preset = $cfg['presets'][$defaultPreset];
-        
+
         // Merge preset configuration with existing config
         $cfg['upstream_url'] = $preset['upstream_url'];
         $cfg['upstream_branch'] = $preset['upstream_branch'] ?? $cfg['upstream_branch'];
-        
+
         // Merge hooks if they exist in the preset
         if (isset($preset['post_update'])) {
             $cfg['post_update'] = array_merge($cfg['post_update'], $preset['post_update']);
         }
-        
+
         if (isset($preset['pre_update'])) {
             $cfg['pre_update'] = array_merge($cfg['pre_update'], $preset['pre_update']);
         }
@@ -190,12 +200,12 @@ final class UpstreamUpgradeCommand extends Command
         $this->newLine();
 
         $tests = [
-            'Git Binary' => fn() => $this->testGitBinary($cfg),
-            'Working Directory' => fn() => $this->testWorkingDirectory($cfg),
-            'Configuration' => fn() => $this->testConfiguration($cfg),
-            'Remote Connectivity' => fn() => $this->testRemoteConnectivity($cfg),
-            'Branch Validation' => fn() => $this->testBranchValidation($cfg),
-            'Local Repository' => fn() => $this->testLocalRepository($cfg),
+            'Git Binary' => fn (): bool => $this->testGitBinary($cfg),
+            'Working Directory' => fn (): bool => $this->testWorkingDirectory($cfg),
+            'Configuration' => fn (): bool => $this->testConfiguration($cfg),
+            'Remote Connectivity' => fn (): bool => $this->testRemoteConnectivity($cfg),
+            'Branch Validation' => fn (): bool => $this->testBranchValidation($cfg),
+            'Local Repository' => fn (): bool => $this->testLocalRepository($cfg),
         ];
 
         $allPassed = true;
@@ -209,7 +219,7 @@ final class UpstreamUpgradeCommand extends Command
                     $this->line("  ❌ <error>{$testName} - FAILED</error>");
                     $allPassed = false;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->line("  ❌ <error>{$testName} - ERROR: {$e->getMessage()}</error>");
                 $allPassed = false;
             }
@@ -229,12 +239,14 @@ final class UpstreamUpgradeCommand extends Command
     {
         $git = new VersionControl((string) $cfg['git_binary'], (string) $cfg['working_dir']);
         $version = $git->run(['--version'], throw: false);
-        return !empty($version) && str_contains($version, 'git version');
+
+        return $version !== '' && $version !== '0' && str_contains($version, 'git version');
     }
 
     private function testWorkingDirectory(array $cfg): bool
     {
         $workingDir = (string) $cfg['working_dir'];
+
         return is_dir($workingDir) && is_writable($workingDir);
     }
 
@@ -246,22 +258,24 @@ final class UpstreamUpgradeCommand extends Command
                 return false;
             }
         }
-        
+
         $strategy = Str::lower((string) $cfg['strategy']);
+
         return in_array($strategy, ['merge', 'rebase'], true);
     }
 
     private function testRemoteConnectivity(array $cfg): bool
     {
         $upstreamUrl = (string) ($this->option('upstream') ?: $cfg['upstream_url']);
-        
+
         $git = new VersionControl((string) $cfg['git_binary'], (string) $cfg['working_dir']);
-        
+
         // Test if we can reach the remote URL
         try {
             $git->run(['ls-remote', $upstreamUrl], throw: true);
+
             return true;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -270,13 +284,14 @@ final class UpstreamUpgradeCommand extends Command
     {
         $upstreamUrl = (string) ($this->option('upstream') ?: $cfg['upstream_url']);
         $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
-        
+
         $git = new VersionControl((string) $cfg['git_binary'], (string) $cfg['working_dir']);
-        
+
         try {
             $refs = $git->run(['ls-remote', '--heads', $upstreamUrl, $upstreamBranch], throw: false);
-            return !empty(trim($refs));
-        } catch (\Throwable) {
+
+            return ! in_array(mb_trim($refs), ['', '0'], true);
+        } catch (Throwable) {
             return false;
         }
     }
@@ -284,21 +299,21 @@ final class UpstreamUpgradeCommand extends Command
     private function testLocalRepository(array $cfg): bool
     {
         $git = new VersionControl((string) $cfg['git_binary'], (string) $cfg['working_dir']);
-        
+
         try {
             // Check if this is a git repository
             $git->run(['rev-parse', '--git-dir'], throw: true);
-            
+
             // Check if we have a clean working directory
             $status = $git->run(['status', '--porcelain'], throw: false);
-            $isClean = empty(trim($status));
-            
-            if (!$isClean) {
-                $this->line("  ⚠️  <comment>Working directory has uncommitted changes</comment>");
+            $isClean = in_array(mb_trim($status), ['', '0'], true);
+
+            if (! $isClean) {
+                $this->line('  ⚠️  <comment>Working directory has uncommitted changes</comment>');
             }
-            
+
             return true;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }
