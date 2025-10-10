@@ -87,6 +87,19 @@ final class UpstreamUpgradeCommand extends Command
         $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
         $localBranch = (string) ($this->option('local') ?: $cfg['local_branch']);
 
+        // Always use the current branch as local branch (could be master, main, dev, etc.)
+        $currentBranch = mb_trim($git->run(['rev-parse', '--abbrev-ref', 'HEAD']));
+        if ($localBranch !== $currentBranch) {
+            $this->line("📍 Using current branch: <info>$currentBranch</info> (configured: $localBranch)");
+            $localBranch = $currentBranch;
+        }
+
+        // Upstream branch is always 'main' for Laravel starter kits
+        if ($upstreamBranch !== 'main') {
+            $this->line("📍 Using upstream branch: <info>main</info> (configured: $upstreamBranch)");
+            $upstreamBranch = 'main';
+        }
+
         try {
             // Ensure remote exists and fetch latest
             if (! $git->hasRemote($remoteName)) {

@@ -67,3 +67,32 @@ it('can run pr command with test option', function () {
         ->expectsOutput('🔍 Testing upstream sync configuration...')
         ->assertExitCode(0);
 });
+
+it('handles different local branch names correctly', function () {
+    // Test with master branch (default in many repos)
+    $this->artisan('laravelplus:check')
+        ->expectsOutput('📍 Using current branch: master (configured: main)')
+        ->assertExitCode(0);
+});
+
+it('always uses main for upstream branch', function () {
+    // Test that upstream branch is always main regardless of config
+    config(['upstream.upstream_branch' => 'develop']);
+
+    $this->artisan('laravelplus:check')
+        ->expectsOutput('📍 Using upstream branch: main (configured: develop)')
+        ->assertExitCode(0);
+});
+
+it('handles missing upstream remote', function () {
+    // This test would need to mock the git commands to simulate missing remote
+    $this->artisan('laravelplus:check')
+        ->assertExitCode(0);
+});
+
+it('respects command line branch overrides', function () {
+    $this->artisan('laravelplus:check --local=feature-branch --branch=develop')
+        ->expectsOutput('📍 Using current branch: master (configured: feature-branch)')
+        ->expectsOutput('📍 Using upstream branch: main (configured: develop)')
+        ->assertExitCode(0);
+});

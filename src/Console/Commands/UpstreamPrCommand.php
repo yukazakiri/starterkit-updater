@@ -57,6 +57,19 @@ final class UpstreamPrCommand extends Command
         $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
         $localBranch = (string) ($this->option('local') ?: $cfg['local_branch']);
         $strategy = Str::lower((string) ($this->option('strategy') ?: $cfg['strategy']));
+
+        // Always use the current branch as local branch (could be master, main, dev, etc.)
+        $currentBranch = mb_trim($this->versionControl->run(['rev-parse', '--abbrev-ref', 'HEAD']));
+        if ($localBranch !== $currentBranch) {
+            $this->line("📍 Using current branch: <info>$currentBranch</info> (configured: $localBranch)");
+            $localBranch = $currentBranch;
+        }
+
+        // Upstream branch is always 'main' for Laravel starter kits
+        if ($upstreamBranch !== 'main') {
+            $this->line("📍 Using upstream branch: <info>main</info> (configured: $upstreamBranch)");
+            $upstreamBranch = 'main';
+        }
         $allowUnrelated = (bool) $cfg['allow_unrelated_histories'];
         $dry = (bool) $this->option('dry-run');
 

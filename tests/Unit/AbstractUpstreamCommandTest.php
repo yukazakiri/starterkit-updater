@@ -5,11 +5,11 @@ declare(strict_types=1);
 use Illuminate\Console\Command;
 use LaravelPlus\LaravelUpdater\Console\Commands\AbstractUpstreamCommand;
 use LaravelPlus\LaravelUpdater\Contracts\VersionControlInterface;
-use LaravelPlus\LaravelUpdater\Support\VersionControl;
 
-class TestUpstreamCommand extends AbstractUpstreamCommand
+final class TestUpstreamCommand extends AbstractUpstreamCommand
 {
     protected $signature = 'test:upstream-command';
+
     protected $description = 'Test upstream command';
 
     public function handle(): int
@@ -41,27 +41,27 @@ class TestUpstreamCommand extends AbstractUpstreamCommand
 
 it('can be instantiated', function () {
     $command = new TestUpstreamCommand();
-    
+
     expect($command)->toBeInstanceOf(AbstractUpstreamCommand::class);
     expect($command)->toBeInstanceOf(Command::class);
 });
 
 it('has version control instance', function () {
     $command = new TestUpstreamCommand();
-    
+
     expect($command->getVersionControl())->toBeInstanceOf(VersionControlInterface::class);
 });
 
 it('can display logo', function () {
     $command = new TestUpstreamCommand();
-    
+
     // Test that displayLogo doesn't throw an exception
     expect(fn () => $command->testDisplayLogo())->not->toThrow();
 });
 
 it('applies default preset when no upstream URL is set', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'upstream_url' => '',
         'default_preset' => 'vue',
@@ -73,16 +73,16 @@ it('applies default preset when no upstream URL is set', function () {
             ],
         ],
     ];
-    
+
     $result = $command->testApplyDefaultPreset($config);
-    
+
     expect($result['upstream_url'])->toBe('https://github.com/laravel/vue-starter-kit.git');
     expect($result['upstream_branch'])->toBe('main');
 });
 
 it('does not apply default preset when upstream URL is already set', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'upstream_url' => 'https://github.com/custom/repo.git',
         'default_preset' => 'vue',
@@ -93,15 +93,15 @@ it('does not apply default preset when upstream URL is already set', function ()
             ],
         ],
     ];
-    
+
     $result = $command->testApplyDefaultPreset($config);
-    
+
     expect($result['upstream_url'])->toBe('https://github.com/custom/repo.git');
 });
 
 it('does not apply default preset when no default preset is configured', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'upstream_url' => '',
         'default_preset' => null,
@@ -112,15 +112,15 @@ it('does not apply default preset when no default preset is configured', functio
             ],
         ],
     ];
-    
+
     $result = $command->testApplyDefaultPreset($config);
-    
+
     expect($result['upstream_url'])->toBe('');
 });
 
 it('merges preset hooks with existing hooks', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'upstream_url' => '',
         'default_preset' => 'vue',
@@ -133,16 +133,16 @@ it('merges preset hooks with existing hooks', function () {
             ],
         ],
     ];
-    
+
     $result = $command->testApplyDefaultPreset($config);
-    
+
     expect($result['post_update'])->toContain('composer install');
     expect($result['post_update'])->toContain('npm install');
 });
 
 it('can run tests with valid configuration', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'git_binary' => 'git',
         'working_dir' => base_path(),
@@ -151,7 +151,7 @@ it('can run tests with valid configuration', function () {
         'local_branch' => 'main',
         'strategy' => 'merge',
     ];
-    
+
     // Mock the version control to return successful results
     $versionControl = Mockery::mock(VersionControlInterface::class);
     $versionControl->shouldReceive('run')
@@ -169,21 +169,21 @@ it('can run tests with valid configuration', function () {
     $versionControl->shouldReceive('run')
         ->with(['status', '--porcelain'], false)
         ->andReturn('');
-    
+
     // Replace the version control instance
     $reflection = new ReflectionClass($command);
     $property = $reflection->getProperty('versionControl');
     $property->setAccessible(true);
     $property->setValue($command, $versionControl);
-    
+
     $result = $command->testRunTests($config);
-    
+
     expect($result)->toBeTrue();
 });
 
 it('returns false when tests fail', function () {
     $command = new TestUpstreamCommand();
-    
+
     $config = [
         'git_binary' => 'git',
         'working_dir' => '/nonexistent',
@@ -192,16 +192,16 @@ it('returns false when tests fail', function () {
         'local_branch' => 'main',
         'strategy' => 'merge',
     ];
-    
+
     $result = $command->testRunTests($config);
-    
+
     expect($result)->toBeFalse();
 });
 
 it('can handle command execution', function () {
     $command = new TestUpstreamCommand();
-    
+
     $result = $command->handle();
-    
+
     expect($result)->toBe(Command::SUCCESS);
 });

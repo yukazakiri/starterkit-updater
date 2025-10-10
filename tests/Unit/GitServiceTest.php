@@ -19,14 +19,14 @@ it('can add remote if it does not exist', function () {
         ->with('upstream')
         ->once()
         ->andReturn(false);
-    
+
     $this->versionControl->shouldReceive('run')
         ->with(['remote', 'add', 'upstream', 'https://github.com/test/repo.git'])
         ->once()
         ->andReturn('');
 
     $result = $this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git');
-    
+
     expect($result)->toBeTrue();
 });
 
@@ -37,7 +37,7 @@ it('returns true if remote already exists', function () {
         ->andReturn(true);
 
     $result = $this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git');
-    
+
     expect($result)->toBeTrue();
 });
 
@@ -48,7 +48,7 @@ it('can fetch from remote', function () {
         ->andReturn('From https://github.com/test/repo.git');
 
     $result = $this->gitService->fetch('upstream');
-    
+
     expect($result)->toBe('From https://github.com/test/repo.git');
 });
 
@@ -59,7 +59,7 @@ it('can get current branch', function () {
         ->andReturn('main');
 
     $result = $this->gitService->getCurrentBranch();
-    
+
     expect($result)->toBe('main');
 });
 
@@ -70,7 +70,7 @@ it('can check if branch exists', function () {
         ->andReturn('abc123');
 
     $result = $this->gitService->branchExists('main');
-    
+
     expect($result)->toBeTrue();
 });
 
@@ -81,7 +81,7 @@ it('returns false if branch does not exist', function () {
         ->andThrow(new RuntimeException('fatal: Needed a single revision'));
 
     $result = $this->gitService->branchExists('nonexistent');
-    
+
     expect($result)->toBeFalse();
 });
 
@@ -92,7 +92,7 @@ it('can create and checkout new branch', function () {
         ->andReturn('Switched to a new branch \'feature-branch\'');
 
     $result = $this->gitService->createAndCheckoutBranch('feature-branch');
-    
+
     expect($result)->toBe('Switched to a new branch \'feature-branch\'');
 });
 
@@ -103,7 +103,7 @@ it('can checkout existing branch', function () {
         ->andReturn('Switched to branch \'main\'');
 
     $result = $this->gitService->checkoutBranch('main');
-    
+
     expect($result)->toBe('Switched to branch \'main\'');
 });
 
@@ -114,7 +114,7 @@ it('can merge branch with unrelated histories', function () {
         ->andReturn('Merge made by the \'recursive\' strategy.');
 
     $result = $this->gitService->merge('upstream/main', true);
-    
+
     expect($result)->toBe('Merge made by the \'recursive\' strategy.');
 });
 
@@ -125,7 +125,7 @@ it('can merge branch without unrelated histories', function () {
         ->andReturn('Merge made by the \'recursive\' strategy.');
 
     $result = $this->gitService->merge('upstream/main', false);
-    
+
     expect($result)->toBe('Merge made by the \'recursive\' strategy.');
 });
 
@@ -136,7 +136,7 @@ it('can rebase branch', function () {
         ->andReturn('Successfully rebased and updated refs/heads/main.');
 
     $result = $this->gitService->rebase('upstream/main');
-    
+
     expect($result)->toBe('Successfully rebased and updated refs/heads/main.');
 });
 
@@ -147,7 +147,7 @@ it('can check for uncommitted changes', function () {
         ->andReturn('M  modified-file.php');
 
     $result = $this->gitService->hasUncommittedChanges();
-    
+
     expect($result)->toBeTrue();
 });
 
@@ -158,7 +158,7 @@ it('returns false when no uncommitted changes', function () {
         ->andReturn('');
 
     $result = $this->gitService->hasUncommittedChanges();
-    
+
     expect($result)->toBeFalse();
 });
 
@@ -169,7 +169,7 @@ it('can commit changes', function () {
         ->andReturn('[main abc123] feat: add new feature');
 
     $result = $this->gitService->commit('feat: add new feature');
-    
+
     expect($result)->toBe('[main abc123] feat: add new feature');
 });
 
@@ -180,7 +180,7 @@ it('can push to remote', function () {
         ->andReturn('To https://github.com/test/repo.git');
 
     $result = $this->gitService->push('origin', 'main');
-    
+
     expect($result)->toBe('To https://github.com/test/repo.git');
 });
 
@@ -191,7 +191,7 @@ it('can get latest commit hash', function () {
         ->andReturn('abc123def456');
 
     $result = $this->gitService->getLatestCommitHash();
-    
+
     expect($result)->toBe('abc123def456');
 });
 
@@ -202,7 +202,7 @@ it('can get remote commit hash', function () {
         ->andReturn('def456ghi789');
 
     $result = $this->gitService->getRemoteCommitHash('upstream', 'main');
-    
+
     expect($result)->toBe('def456ghi789');
 });
 
@@ -211,14 +211,14 @@ it('can check if branches are up to date', function () {
         ->with(['rev-parse', 'HEAD'])
         ->once()
         ->andReturn('abc123def456');
-    
+
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'upstream/main'])
         ->once()
         ->andReturn('abc123def456');
 
     $result = $this->gitService->isUpToDate('upstream', 'main');
-    
+
     expect($result)->toBeTrue();
 });
 
@@ -227,13 +227,13 @@ it('returns false when branches are not up to date', function () {
         ->with(['rev-parse', 'HEAD'])
         ->once()
         ->andReturn('abc123def456');
-    
+
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'upstream/main'])
         ->once()
         ->andReturn('def456ghi789');
 
     $result = $this->gitService->isUpToDate('upstream', 'main');
-    
+
     expect($result)->toBeFalse();
 });

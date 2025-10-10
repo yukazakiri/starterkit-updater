@@ -6,7 +6,7 @@ use LaravelPlus\LaravelUpdater\Exceptions\UpstreamException;
 
 it('can create configuration missing exception', function () {
     $exception = UpstreamException::configurationMissing('upstream_url');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -15,7 +15,7 @@ it('can create configuration missing exception', function () {
 
 it('can create invalid strategy exception', function () {
     $exception = UpstreamException::invalidStrategy('invalid');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -24,7 +24,7 @@ it('can create invalid strategy exception', function () {
 
 it('can create git command failed exception', function () {
     $exception = UpstreamException::gitCommandFailed('Failed to fetch');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -34,7 +34,7 @@ it('can create git command failed exception', function () {
 it('can create git command failed exception with previous exception', function () {
     $previous = new RuntimeException('Original error');
     $exception = UpstreamException::gitCommandFailed('Failed to fetch', $previous);
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -45,7 +45,7 @@ it('can create git command failed exception with previous exception', function (
 
 it('can create remote not found exception', function () {
     $exception = UpstreamException::remoteNotFound('upstream');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -54,7 +54,7 @@ it('can create remote not found exception', function () {
 
 it('can create branch not found exception', function () {
     $exception = UpstreamException::branchNotFound('main');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -63,7 +63,7 @@ it('can create branch not found exception', function () {
 
 it('can create working directory not writable exception', function () {
     $exception = UpstreamException::workingDirectoryNotWritable('/tmp');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -72,7 +72,7 @@ it('can create working directory not writable exception', function () {
 
 it('can create hook failed exception', function () {
     $exception = UpstreamException::hookFailed('npm install');
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -82,7 +82,7 @@ it('can create hook failed exception', function () {
 it('can create hook failed exception with previous exception', function () {
     $previous = new RuntimeException('Command failed');
     $exception = UpstreamException::hookFailed('npm install', $previous);
-    
+
     expect($exception)
         ->toBeInstanceOf(UpstreamException::class)
         ->getMessage()
@@ -93,6 +93,6 @@ it('can create hook failed exception with previous exception', function () {
 
 it('extends RuntimeException', function () {
     $exception = UpstreamException::configurationMissing('test');
-    
+
     expect($exception)->toBeInstanceOf(RuntimeException::class);
 });

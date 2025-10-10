@@ -37,6 +37,19 @@ final class UpstreamCheckCommand extends Command
         $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
         $localBranch = (string) ($this->option('local') ?: $cfg['local_branch']);
 
+        // Always use the current branch as local branch (could be master, main, dev, etc.)
+        $currentBranch = mb_trim($git->run(['rev-parse', '--abbrev-ref', 'HEAD']));
+        if ($localBranch !== $currentBranch) {
+            $this->line("📍 Using current branch: <info>$currentBranch</info> (configured: $localBranch)");
+            $localBranch = $currentBranch;
+        }
+
+        // Upstream branch is always 'main' for Laravel starter kits
+        if ($upstreamBranch !== 'main') {
+            $this->line("📍 Using upstream branch: <info>main</info> (configured: $upstreamBranch)");
+            $upstreamBranch = 'main';
+        }
+
         $this->info('🔍 Checking for upstream updates...');
         $this->newLine();
 
@@ -47,7 +60,11 @@ final class UpstreamCheckCommand extends Command
                 $git->run(['remote', 'add', $remoteName, $upstreamUrl]);
             } else {
                 // Update remote URL if needed
-                $git->run(['remote', 'set-url', $remoteName, $upstreamUrl]);
+                $currentUrl = mb_trim($git->run(['remote', 'get-url', $remoteName]));
+                if ($currentUrl !== $upstreamUrl) {
+                    $this->line("📡 Updating upstream remote URL: <info>$upstreamUrl</info>");
+                    $git->run(['remote', 'set-url', $remoteName, $upstreamUrl]);
+                }
             }
 
             // Fetch latest from upstream
