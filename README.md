@@ -1,5 +1,13 @@
 # Laravel Updater
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
+[![Total Downloads](https://img.shields.io/packagist/dt/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
+[![License](https://img.shields.io/packagist/l/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
+[![PHP Version](https://img.shields.io/packagist/php-v/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
+[![Laravel Version](https://img.shields.io/badge/Laravel-10.0%2B-red.svg?style=flat-square)](https://laravel.com)
+[![GitHub Stars](https://img.shields.io/github/stars/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
+[![GitHub Issues](https://img.shields.io/github/issues/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater/issues)
+
 A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing and hook support.
 
 ## Features
