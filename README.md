@@ -8,7 +8,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 [![GitHub Issues](https://img.shields.io/github/issues/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater/issues)
 
-A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing and hook support.
+A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing and hook support. Perfect for keeping your Laravel starter kit projects up to date!
 
 ## Features
 
@@ -19,11 +19,35 @@ A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbuc
 - 🛡️ **Safe operations** - Dry-run mode and comprehensive error handling
 - ⚙️ **Flexible configuration** - Environment variables and command-line overrides
 - 🚀 **Production ready** - Timeout protection and proper error handling
+- 🎯 **Starter Kit Support** - Pre-configured for all official Laravel starter kits
+- 🔧 **Easy Setup** - Interactive setup command for quick configuration
 
 ## Installation
 
 ```bash
 composer require laravelplus/laravel-updater
+```
+
+## Quick Setup
+
+### For Laravel Starter Kits
+
+Use the interactive setup command for quick configuration:
+
+```bash
+# Interactive setup
+php artisan upstream:setup
+
+# Or specify your starter kit directly
+php artisan upstream:setup --preset=vue
+php artisan upstream:setup --preset=react
+php artisan upstream:setup --preset=livewire
+```
+
+### For Custom Repositories
+
+```bash
+php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 ```
 
 ## Configuration
@@ -78,47 +102,113 @@ GIT_BINARY=git
 
 ## Usage
 
-### Basic Sync
+### Quick Start Examples
+
+#### Vue Starter Kit
+```bash
+# Setup for Vue starter kit
+php artisan upstream:setup --preset=vue
+
+# Test and sync
+php artisan upstream:sync --test
+```
+
+#### React Starter Kit
+```bash
+# Setup for React starter kit
+php artisan upstream:setup --preset=react
+
+# Test and sync
+php artisan upstream:sync --test
+```
+
+#### Livewire Starter Kit
+```bash
+# Setup for Livewire starter kit
+php artisan upstream:setup --preset=livewire
+
+# Test and sync
+php artisan upstream:sync --test
+```
+
+#### Custom Repository
+```bash
+# Setup for custom repository
+php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
+
+# Test and sync
+php artisan upstream:sync --test
+```
+
+### Advanced Usage
+
+#### Basic Sync
 
 ```bash
 php artisan upstream:sync
 ```
 
-### Test Before Sync
+#### Test Before Sync
 
 ```bash
 php artisan upstream:sync --test
 ```
 
-### Dry Run (See What Would Happen)
+#### Dry Run (See What Would Happen)
 
 ```bash
 php artisan upstream:sync --dry-run
 ```
 
-### Use Rebase Strategy
+#### Use Rebase Strategy
 
 ```bash
 php artisan upstream:sync --strategy=rebase
 ```
 
-### Override Upstream URL
+#### Override Upstream URL
 
 ```bash
 php artisan upstream:sync --upstream=https://github.com/other/repo.git
 ```
 
-### Skip Hooks
+#### Skip Hooks
 
 ```bash
 php artisan upstream:sync --no-pre --no-post
 ```
 
-### Custom Remote Name
+#### Custom Remote Name
 
 ```bash
 php artisan upstream:sync --remote-name=upstream
 ```
+
+## Supported Laravel Starter Kits
+
+This package comes with pre-configured support for all official Laravel starter kits:
+
+### Official Laravel Starter Kits
+
+- **Vue Starter Kit** - [laravel/vue-starter-kit](https://github.com/laravel/vue-starter-kit)
+  - Vue 3 + Inertia.js + TypeScript + Tailwind CSS
+  - Perfect for modern SPA applications
+
+- **React Starter Kit** - [laravel/react-starter-kit](https://github.com/laravel/react-starter-kit)
+  - React 19 + Inertia.js + TypeScript + Tailwind CSS
+  - Ideal for React-based applications
+
+- **Livewire Starter Kit** - [laravel/livewire-starter-kit](https://github.com/laravel/livewire-starter-kit)
+  - Livewire 3 + Laravel Volt + TypeScript + Tailwind CSS
+  - Great for teams preferring PHP over JavaScript
+
+### Custom Starter Kits
+
+The package also supports any custom Laravel starter kit or repository:
+
+- **Custom Repositories** - Any Git repository URL
+- **Private Repositories** - GitHub, GitLab, Bitbucket private repos
+- **Self-hosted Git** - Your own Git server
 
 ## Supported Platforms
 
