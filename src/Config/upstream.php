@@ -57,6 +57,30 @@ return [
         // 'php artisan up',
     ],
 
+        /*
+    |--------------------------------------------------------------------------
+    | Default Preset
+    |--------------------------------------------------------------------------
+    |
+    | Set a default preset to use when no specific configuration is provided.
+    | Options: vue, react, livewire, custom, or null (no default)
+    |
+    */
+    'default_preset' => env('UPSTREAM_DEFAULT_PRESET', 'vue'),
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto-detect Starter Kit
+    |--------------------------------------------------------------------------
+    |
+    | Automatically detect which starter kit you're using based on
+    | package.json dependencies and set appropriate defaults.
+    |
+    */
+    'auto_detect' => env('UPSTREAM_AUTO_DETECT', true),
+
     /*
     |--------------------------------------------------------------------------
     | Starter Kit Presets
@@ -99,14 +123,4 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Auto-detect Starter Kit
-    |--------------------------------------------------------------------------
-    |
-    | Automatically detect which starter kit you're using based on
-    | package.json dependencies and set appropriate defaults.
-    |
-    */
-    'auto_detect' => env('UPSTREAM_AUTO_DETECT', true),
 ];

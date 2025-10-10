@@ -27,6 +27,9 @@ final class UpstreamSyncCommand extends Command
     {
         $cfg = config('upstream');
 
+        // Apply default preset if no specific configuration is set
+        $cfg = $this->applyDefaultPreset($cfg);
+
         // Run tests if requested
         if ($this->option('test')) {
             if (!$this->runTests($cfg)) {
@@ -205,6 +208,38 @@ final class UpstreamSyncCommand extends Command
         }
 
         return $allPassed;
+    }
+
+    private function applyDefaultPreset(array $cfg): array
+    {
+        // Check if we already have a specific upstream URL configured
+        if (!empty($cfg['upstream_url']) && $cfg['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
+            return $cfg;
+        }
+
+        // Check if we have a default preset configured
+        $defaultPreset = $cfg['default_preset'] ?? null;
+        if (!$defaultPreset || !isset($cfg['presets'][$defaultPreset])) {
+            return $cfg;
+        }
+
+        // Apply the default preset configuration
+        $preset = $cfg['presets'][$defaultPreset];
+        
+        // Merge preset configuration with existing config
+        $cfg['upstream_url'] = $preset['upstream_url'];
+        $cfg['upstream_branch'] = $preset['upstream_branch'] ?? $cfg['upstream_branch'];
+        
+        // Merge hooks if they exist in the preset
+        if (isset($preset['post_update'])) {
+            $cfg['post_update'] = array_merge($cfg['post_update'], $preset['post_update']);
+        }
+        
+        if (isset($preset['pre_update'])) {
+            $cfg['pre_update'] = array_merge($cfg['pre_update'], $preset['pre_update']);
+        }
+
+        return $cfg;
     }
 
     private function testGitBinary(array $cfg): bool

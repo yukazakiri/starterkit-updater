@@ -97,6 +97,8 @@ UPSTREAM_LOCAL_BRANCH=main
 UPSTREAM_STRATEGY=merge
 UPSTREAM_COMMIT_MESSAGE="chore(upstream): sync from upstream"
 UPSTREAM_ALLOW_UNRELATED=true
+UPSTREAM_DEFAULT_PRESET=vue
+UPSTREAM_AUTO_DETECT=true
 GIT_BINARY=git
 ```
 
@@ -137,6 +139,28 @@ php artisan upstream:sync --test
 php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 
 # Test and sync
+php artisan upstream:sync --test
+```
+
+### Using Default Presets
+
+You can set a default preset in your `.env` file to automatically use a specific starter kit configuration:
+
+```env
+# Set Vue as the default preset
+UPSTREAM_DEFAULT_PRESET=vue
+
+# Or React
+UPSTREAM_DEFAULT_PRESET=react
+
+# Or Livewire
+UPSTREAM_DEFAULT_PRESET=livewire
+```
+
+With a default preset configured, you can simply run:
+
+```bash
+# Uses the default preset automatically
 php artisan upstream:sync --test
 ```
 
