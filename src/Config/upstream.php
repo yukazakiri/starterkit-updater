@@ -83,6 +83,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pull Request Workflow
+    |--------------------------------------------------------------------------
+    |
+    | Create pull requests instead of direct merges for safer updates.
+    | This creates a new branch with updates and opens a PR to the target branch.
+    |
+    */
+    'create_pr' => env('UPSTREAM_CREATE_PR', false),
+    'pr_branch_prefix' => env('UPSTREAM_PR_BRANCH_PREFIX', 'upstream-sync-'),
+    'pr_title' => env('UPSTREAM_PR_TITLE', 'chore: sync from upstream'),
+    'pr_body' => env('UPSTREAM_PR_BODY', 'Automated upstream sync from {upstream_url}'),
+    'github_token' => env('GITHUB_TOKEN'),
+    'github_owner' => env('GITHUB_OWNER'),
+    'github_repo' => env('GITHUB_REPO'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Starter Kit Presets
     |--------------------------------------------------------------------------
     |

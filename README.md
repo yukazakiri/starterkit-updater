@@ -21,6 +21,8 @@ A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbuc
 - 🚀 **Production ready** - Timeout protection and proper error handling
 - 🎯 **Starter Kit Support** - Pre-configured for all official Laravel starter kits
 - 🔧 **Easy Setup** - Interactive setup command for quick configuration
+- 🔀 **Pull Request Workflow** - Create PRs instead of direct merges for safer updates
+- 🤖 **GitHub Integration** - Automatic PR creation with GitHub API
 
 ## Installation
 
@@ -99,10 +101,32 @@ UPSTREAM_COMMIT_MESSAGE="chore(upstream): sync from upstream"
 UPSTREAM_ALLOW_UNRELATED=true
 UPSTREAM_DEFAULT_PRESET=vue
 UPSTREAM_AUTO_DETECT=true
+UPSTREAM_CREATE_PR=false
+UPSTREAM_PR_BRANCH_PREFIX=upstream-sync-
+UPSTREAM_PR_TITLE="chore: sync from upstream"
+UPSTREAM_PR_BODY="Automated upstream sync from {upstream_url}"
+GITHUB_TOKEN=your_github_token
+GITHUB_OWNER=your_username
+GITHUB_REPO=your_repo
 GIT_BINARY=git
 ```
 
 ## Usage
+
+### Recommended Workflow
+
+The recommended workflow is to check for updates first, then upgrade:
+
+```bash
+# 1. Check if updates are available
+php artisan upstream:check
+
+# 2. If updates are available, upgrade your project
+php artisan upstream:upgrade
+
+# 3. Or create a pull request for safer updates
+php artisan upstream:upgrade --pr
+```
 
 ### Quick Start Examples
 
@@ -111,8 +135,11 @@ GIT_BINARY=git
 # Setup for Vue starter kit
 php artisan upstream:setup --preset=vue
 
-# Test and sync
-php artisan upstream:sync --test
+# Check for updates
+php artisan upstream:check
+
+# Upgrade with updates
+php artisan upstream:upgrade
 ```
 
 #### React Starter Kit
@@ -120,8 +147,11 @@ php artisan upstream:sync --test
 # Setup for React starter kit
 php artisan upstream:setup --preset=react
 
-# Test and sync
-php artisan upstream:sync --test
+# Check for updates
+php artisan upstream:check
+
+# Upgrade with updates
+php artisan upstream:upgrade
 ```
 
 #### Livewire Starter Kit
@@ -129,8 +159,11 @@ php artisan upstream:sync --test
 # Setup for Livewire starter kit
 php artisan upstream:setup --preset=livewire
 
-# Test and sync
-php artisan upstream:sync --test
+# Check for updates
+php artisan upstream:check
+
+# Upgrade with updates
+php artisan upstream:upgrade
 ```
 
 #### Custom Repository
@@ -138,8 +171,11 @@ php artisan upstream:sync --test
 # Setup for custom repository
 php artisan upstream:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 
-# Test and sync
-php artisan upstream:sync --test
+# Check for updates
+php artisan upstream:check
+
+# Upgrade with updates
+php artisan upstream:upgrade
 ```
 
 ### Using Default Presets
@@ -160,9 +196,57 @@ UPSTREAM_DEFAULT_PRESET=livewire
 With a default preset configured, you can simply run:
 
 ```bash
-# Uses the default preset automatically
-php artisan upstream:sync --test
+# Check for updates (uses default preset automatically)
+php artisan upstream:check
+
+# Upgrade if updates are available
+php artisan upstream:upgrade
 ```
+
+## Pull Request Workflow
+
+For safer updates in production environments, you can create pull requests instead of direct merges:
+
+### Setup GitHub Integration
+
+1. **Create a GitHub Personal Access Token:**
+   - Go to GitHub Settings → Developer settings → Personal access tokens
+   - Generate a new token with `repo` permissions
+   - Add it to your `.env` file
+
+2. **Configure GitHub settings:**
+```env
+GITHUB_TOKEN=ghp_your_token_here
+GITHUB_OWNER=your_username
+GITHUB_REPO=your_repo_name
+```
+
+### Create Pull Requests
+
+```bash
+# Check for updates first
+php artisan upstream:check
+
+# Create a PR with upstream updates
+php artisan upstream:upgrade --pr
+
+# Or use the direct PR command
+php artisan upstream:pr --test
+
+# Create PR with custom branch name
+php artisan upstream:pr --pr-branch=update-vue-starter-kit
+
+# Create PR with custom title and body
+php artisan upstream:pr --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
+```
+
+### PR Workflow Benefits
+
+- **🔒 Safer Updates** - Review changes before merging
+- **📝 Better Documentation** - PR descriptions and commit history
+- **👥 Team Collaboration** - Multiple reviewers can approve
+- **🔄 Easy Rollback** - Simple to revert if issues arise
+- **📊 Change Tracking** - Clear history of what changed and when
 
 ### Advanced Usage
 
@@ -290,6 +374,26 @@ For CI/CD environments, use personal access tokens in your repository URL:
 https://username:token@github.com/user/repo.git
 ```
 
+## Available Commands
+
+### `upstream:check`
+Check if there are updates available from upstream repository.
+
+### `upstream:upgrade`
+Upgrade your project with the latest changes from upstream (recommended).
+
+### `upstream:upgrade --pr`
+Create a pull request with upstream updates (safer for production).
+
+### `upstream:sync`
+Direct sync with upstream repository (merges directly to your branch).
+
+### `upstream:pr`
+Create a pull request with upstream updates (alternative to upgrade --pr).
+
+### `upstream:setup`
+Interactive setup wizard for configuring the package.
+
 ## Command Options
 
 | Option | Description |
@@ -303,6 +407,9 @@ https://username:token@github.com/user/repo.git
 | `--branch=` | Override upstream branch |
 | `--local=` | Override local branch |
 | `--remote-name=` | Remote name to use (default: upstream) |
+| `--pr-branch=` | Override PR branch name (upstream:pr only) |
+| `--pr-title=` | Override PR title (upstream:pr only) |
+| `--pr-body=` | Override PR body (upstream:pr only) |
 
 ## Requirements
 
