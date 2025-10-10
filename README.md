@@ -1,28 +1,64 @@
-# Laravel Updater
+# LaravelPlus Updater
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
 [![Total Downloads](https://img.shields.io/packagist/dt/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
 [![License](https://img.shields.io/packagist/l/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
 [![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![Laravel Version](https://img.shields.io/badge/Laravel-10.0%2B-red.svg?style=flat-square)](https://laravel.com)
+[![Laravel Version](https://img.shields.io/badge/Laravel-12.0%2B-red.svg?style=flat-square)](https://laravel.com)
 [![GitHub Stars](https://img.shields.io/github/stars/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 [![GitHub Issues](https://img.shields.io/github/issues/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater/issues)
+[![Tests](https://img.shields.io/badge/tests-97%20test%20cases-green.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
+[![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 
-A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing and hook support. Perfect for keeping your Laravel starter kit projects up to date!
+A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. Perfect for keeping your Laravel starter kit projects up to date!
 
-## Features
+## 🚀 LaravelPlus Community
 
-- 🔄 **Sync with any Git repository** - GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted
-- 🧪 **Built-in testing** - Validate configuration and connectivity before syncing
-- 🔀 **Multiple strategies** - Support for both merge and rebase strategies
-- 🪝 **Pre/Post hooks** - Run custom commands before and after sync
-- 🛡️ **Safe operations** - Dry-run mode and comprehensive error handling
-- ⚙️ **Flexible configuration** - Environment variables and command-line overrides
-- 🚀 **Production ready** - Timeout protection and proper error handling
-- 🎯 **Starter Kit Support** - Pre-configured for all official Laravel starter kits
-- 🔧 **Easy Setup** - Interactive setup command for quick configuration
-- 🔀 **Pull Request Workflow** - Create PRs instead of direct merges for safer updates
-- 🤖 **GitHub Integration** - Automatic PR creation with GitHub API
+Welcome to the **LaravelPlus** community! We're building tools that make Laravel development more enjoyable and productive. Join our community and help shape the future of Laravel tooling.
+
+- 🌟 **Star us on GitHub** - Help us grow the community
+- 🐛 **Report issues** - Help us improve the tools
+- 💡 **Suggest features** - Share your ideas
+- 🤝 **Contribute** - Make Laravel better for everyone
+
+## ✨ Features
+
+### 🔄 **Core Functionality**
+- **Universal Git Support** - GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted
+- **Multiple Strategies** - Support for both merge and rebase strategies
+- **Smart Branch Management** - Automatic branch detection and creation
+- **Safe Operations** - Dry-run mode and comprehensive error handling
+
+### 🧪 **Testing & Quality**
+- **Comprehensive Test Suite** - 97 test cases covering all functionality
+- **Built-in Testing** - Validate configuration and connectivity before syncing
+- **Code Quality Tools** - PHPStan, Rector, and Laravel Pint integration
+- **Modern Testing** - Pest PHP with Laravel Testbench
+
+### 🎯 **Starter Kit Support**
+- **Pre-configured Presets** - Vue, React, Livewire starter kits
+- **Auto-detection** - Automatically detect and configure your starter kit
+- **Custom Repositories** - Support for any custom Laravel starter kit
+- **Easy Setup** - Interactive setup command with beautiful prompts
+
+### 🔀 **Advanced Workflows**
+- **Pull Request Workflow** - Create PRs instead of direct merges for safer updates
+- **GitHub Integration** - Automatic PR creation with GitHub API
+- **Pre/Post Hooks** - Run custom commands before and after sync
+- **Flexible Configuration** - Environment variables and command-line overrides
+
+### 🏗️ **Modern Architecture**
+- **PHP 8.4 Features** - Strict types, readonly properties, constructor promotion
+- **Interface-based Design** - Clean contracts and abstractions
+- **Service Layer** - Separated business logic from commands
+- **Exception Handling** - Custom exceptions with detailed error messages
+- **Laravel Prompts** - Beautiful command-line interfaces with fallbacks
+
+### 🚀 **Production Ready**
+- **Timeout Protection** - Prevents hanging operations
+- **Memory Management** - Optimized for large repositories
+- **Error Recovery** - Graceful handling of network and Git issues
+- **Logging & Debugging** - Comprehensive logging for troubleshooting
 
 ## Installation
 
@@ -411,30 +447,144 @@ Interactive setup wizard for configuring the package.
 | `--pr-title=` | Override PR title (laravelplus:pr only) |
 | `--pr-body=` | Override PR body (laravelplus:pr only) |
 
+## 🧪 Testing
+
+This package includes a comprehensive test suite with **97 test cases** covering all functionality:
+
+### Test Coverage
+- **Unit Tests** - Core components, services, and utilities
+- **Feature Tests** - Command integration and Laravel functionality
+- **Integration Tests** - Service provider and configuration
+- **Exception Tests** - Error handling and edge cases
+
+### Running Tests
+```bash
+# Run all tests
+composer test
+
+# Run specific test suites
+composer test:unit
+composer test:lint
+composer test:types
+
+# Run with coverage
+vendor/bin/pest --coverage
+```
+
+### Code Quality
+The package maintains high code quality standards with:
+- **PHPStan** - Static analysis (Level 8) with strict type checking
+- **Rector** - Code modernization and PHP 8.4 feature adoption
+- **Laravel Pint** - Code style enforcement with Laravel standards
+- **Pest PHP** - Modern testing framework with Laravel integration
+
+### Architecture Highlights
+- **Strict Types** - `declare(strict_types=1)` throughout the codebase
+- **Interface-based Design** - Clean contracts for all major components
+- **Service Layer** - Separated business logic from command classes
+- **Custom Exceptions** - Detailed error handling with specific exception types
+- **Trait-based Reusability** - Common functionality extracted into traits
+- **Constructor Property Promotion** - Modern PHP 8.4 syntax
+- **Readonly Properties** - Immutable data structures where appropriate
+
+## 🛠️ Development
+
+### Prerequisites
+- PHP 8.4+
+- Composer
+- Git
+
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/LaravelPlus/laravel-updater.git
+cd laravel-updater
+
+# Install dependencies
+composer install
+
+# Run tests
+composer test
+
+# Check code quality
+composer test:lint
+composer test:types
+```
+
+### Contributing
+We welcome contributions! Please see our [Development Guide](DEVELOPMENT.md) for detailed information on:
+- Code style and standards
+- Testing requirements
+- Pull request process
+- Issue reporting
+
 ## Requirements
 
-- PHP 8.4+
-- Laravel 10.0+
-- Git installed and accessible
-- Valid Git repository
+- **PHP 8.4+** - Latest PHP features and performance
+- **Laravel 12.0+** - Latest Laravel framework
+- **Git** - Installed and accessible in PATH
+- **Valid Git Repository** - Working directory must be a Git repository
 
 ## License
 
 This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## Contributing
+## 📊 Package Statistics
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+- **97 Test Cases** - Comprehensive test coverage
+- **Modern Architecture** - PHP 8.4 + Laravel 12
+- **Code Quality** - PHPStan Level 8 + Rector + Pint
+- **Zero Dependencies** - Only Laravel framework dependencies
+- **Universal Support** - Works with any Git hosting service
 
-## Changelog
+## 🤝 Contributing
 
-Please see [CHANGELOG.md](CHANGELOG.md) for more information on what has changed recently.
+We welcome contributions from the community! Here's how you can help:
 
-## Credits
+### Ways to Contribute
+- 🐛 **Report Bugs** - Help us identify and fix issues
+- 💡 **Suggest Features** - Share your ideas for improvements
+- 📝 **Improve Documentation** - Help others understand the package
+- 🧪 **Add Tests** - Increase test coverage and reliability
+- 🔧 **Fix Issues** - Submit pull requests for bug fixes
 
-- [LaravelPlus](https://github.com/laravelplus)
-- [All Contributors](../../contributors)
+### Development Process
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
-## Support
+## 📈 Roadmap
 
-If you discover any issues, please use the [issue tracker](https://github.com/laravelplus/laravel-updater/issues) on GitHub.
+### Upcoming Features
+- 🔄 **GitLab Integration** - Direct GitLab API support
+- 📊 **Analytics Dashboard** - Track sync history and statistics
+- 🔔 **Notifications** - Slack/Discord integration for sync events
+- 🎨 **Custom Themes** - Beautiful command-line interfaces
+- 🔐 **Enhanced Security** - GPG signing and verification
+
+## 🏆 Credits
+
+- **[LaravelPlus](https://github.com/laravelplus)** - The LaravelPlus community
+- **[All Contributors](../../contributors)** - Thank you to everyone who contributes
+- **[Laravel Framework](https://laravel.com)** - Built on the amazing Laravel framework
+
+## 📞 Support
+
+### Getting Help
+- 📖 **Documentation** - Check this README and [DEVELOPMENT.md](DEVELOPMENT.md)
+- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/LaravelPlus/laravel-updater/issues)
+- 💬 **Discussions** - [GitHub Discussions](https://github.com/LaravelPlus/laravel-updater/discussions)
+- ⭐ **Star the Project** - Show your support!
+
+### Community
+Join the LaravelPlus community and help us build amazing Laravel tools:
+- 🌟 **Star us on GitHub** - Help us grow
+- 🐦 **Follow us** - Stay updated on new features
+- 💡 **Share feedback** - Help us improve
+
+---
+
+**Made with ❤️ by the LaravelPlus community**
