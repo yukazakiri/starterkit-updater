@@ -51,6 +51,10 @@ final class UpstreamCheckCommand extends Command
         }
 
         $this->info('🔍 Checking for upstream updates...');
+        
+        // Show repository information
+        $this->showRepositoryInfo($git, $upstreamUrl);
+        
         $this->newLine();
 
         try {
@@ -223,6 +227,24 @@ final class UpstreamCheckCommand extends Command
         }
 
         return $cfg;
+    }
+
+    private function showRepositoryInfo(VersionControl $git, string $upstreamUrl): void
+    {
+        try {
+            // Get local repository URL
+            $localUrl = $git->run(['remote', 'get-url', 'origin'], throw: false);
+            if (!$localUrl) {
+                $localUrl = 'Local repository (no origin remote)';
+            }
+            
+            $this->line('🏠 <comment>Repository Information:</comment>');
+            $this->line("   Local: <info>$localUrl</info>");
+            $this->line("   Upstream: <info>$upstreamUrl</info>");
+            
+        } catch (Throwable) {
+            // If we can't get repository info, just continue silently
+        }
     }
 
     private function showCommitDetails(VersionControl $git, string $localCommit, string $upstreamCommit): void
