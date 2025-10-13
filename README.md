@@ -103,6 +103,20 @@ php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/
 
 ## Configuration
 
+### Branch Configuration Explained
+
+The package uses two important branch settings:
+
+- **`UPSTREAM_BRANCH`**: The branch in the upstream repository to pull changes from (e.g., `main`, `master`, `develop`)
+- **`UPSTREAM_LOCAL_BRANCH`**: Your main project branch where PRs will be created against (e.g., `main`, `master`, `develop`)
+
+**Example scenarios:**
+- **Laravel Starter Kit**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=main` (your repo)
+- **Legacy Project**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=master` (your repo)
+- **Development Branch**: `UPSTREAM_BRANCH=develop` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=develop` (your repo)
+
+### Publish Configuration
+
 Publish the configuration file:
 
 ```bash
@@ -142,21 +156,30 @@ return [
 Add these to your `.env` file:
 
 ```env
+# Upstream repository configuration
 UPSTREAM_URL=https://github.com/your-upstream/repo.git
-UPSTREAM_BRANCH=main
-UPSTREAM_LOCAL_BRANCH=main
+UPSTREAM_BRANCH=main                    # Branch in upstream repo to pull from
+UPSTREAM_LOCAL_BRANCH=main              # Your main project branch (PRs created against this)
 UPSTREAM_STRATEGY=merge
 UPSTREAM_COMMIT_MESSAGE="chore(upstream): sync from upstream"
 UPSTREAM_ALLOW_UNRELATED=true
+
+# Preset configuration
 UPSTREAM_DEFAULT_PRESET=vue
 UPSTREAM_AUTO_DETECT=true
+
+# PR configuration
 UPSTREAM_CREATE_PR=false
 UPSTREAM_PR_BRANCH_PREFIX=upstream-sync-
 UPSTREAM_PR_TITLE="chore: sync from upstream"
 UPSTREAM_PR_BODY="Automated upstream sync from {upstream_url}"
+
+# GitHub integration
 GITHUB_TOKEN=your_github_token
 GITHUB_OWNER=your_username
 GITHUB_REPO=your_repo
+
+# Git configuration
 GIT_BINARY=git
 ```
 

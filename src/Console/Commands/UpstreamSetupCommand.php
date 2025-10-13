@@ -82,21 +82,26 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->info("Setting up upstream sync for Laravel $preset starter kit...");
         $this->newLine();
 
-        // Use main branch for Laravel starter kits (standard)
-        $branch = 'main';
-        $this->line("🌿 Upstream branch: <info>$branch</info> (standard for Laravel starter kits)");
+        // Ask for upstream branch (what branch to pull from in the upstream repo)
+        $upstreamBranch = $this->text(
+            'Which branch should we pull from in the upstream repository?',
+            default: 'main',
+            placeholder: 'e.g., main, master, develop (this is the branch in the upstream repo)'
+        );
+        
+        $this->line("🌿 Upstream branch: <info>$upstreamBranch</info> (branch in {$config['upstream_url']})");
 
-        // Ask for local branch
+        // Ask for local branch (what branch to create PRs against)
         $localBranch = $this->text(
-            'Which local branch should receive the updates?',
-            default: $branch,
-            placeholder: 'e.g., main, develop, feature-branch'
+            'Which local branch should receive the updates? (PRs will be created against this branch)',
+            default: 'main',
+            placeholder: 'e.g., main, master, develop (your main project branch)'
         );
 
         // Update .env file
         $this->updateEnvFile([
             'UPSTREAM_URL' => $config['upstream_url'],
-            'UPSTREAM_BRANCH' => $branch,
+            'UPSTREAM_BRANCH' => $upstreamBranch,
             'UPSTREAM_LOCAL_BRANCH' => $localBranch,
             'UPSTREAM_PRESET' => $preset,
         ]);
@@ -110,8 +115,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->info("✅ Setup complete for Laravel $preset starter kit!");
         $this->line('📝 Configuration added to .env file');
         $this->line("🔗 Upstream URL: {$config['upstream_url']}");
-        $this->line("🌿 Upstream Branch: $branch");
-        $this->line("📍 Local Branch: $localBranch");
+        $this->line("🌿 Upstream Branch: $upstreamBranch (branch in upstream repo)");
+        $this->line("📍 Local Branch: $localBranch (your main project branch)");
 
         $this->newLine();
         $this->line('💡 You can now run: <info>php artisan laravelplus:check</info>');
@@ -132,16 +137,16 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             return self::FAILURE;
         }
 
-        $branch = $this->text(
-            'Enter upstream branch name',
+        $upstreamBranch = $this->text(
+            'Which branch should we pull from in the upstream repository?',
             default: 'main',
-            placeholder: 'usually "main" for Laravel projects'
+            placeholder: 'e.g., main, master, develop (this is the branch in the upstream repo)'
         );
 
         $localBranch = $this->text(
-            'Enter local branch name',
+            'Which local branch should receive the updates? (PRs will be created against this branch)',
             default: 'main',
-            placeholder: 'where updates will be applied'
+            placeholder: 'e.g., main, master, develop (your main project branch)'
         );
 
         $this->info('Setting up upstream sync for custom repository...');
@@ -150,7 +155,7 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         // Update .env file
         $this->updateEnvFile([
             'UPSTREAM_URL' => $url,
-            'UPSTREAM_BRANCH' => $branch,
+            'UPSTREAM_BRANCH' => $upstreamBranch,
             'UPSTREAM_LOCAL_BRANCH' => $localBranch,
             'UPSTREAM_PRESET' => 'custom',
         ]);
@@ -159,8 +164,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->info('✅ Custom setup complete!');
         $this->line('📝 Configuration added to .env file');
         $this->line("🔗 Upstream URL: $url");
-        $this->line("🌿 Upstream Branch: $branch");
-        $this->line("📍 Local Branch: $localBranch");
+        $this->line("🌿 Upstream Branch: $upstreamBranch (branch in upstream repo)");
+        $this->line("📍 Local Branch: $localBranch (your main project branch)");
 
         $this->newLine();
         $this->line('💡 You can now run: <info>php artisan laravelplus:check</info>');

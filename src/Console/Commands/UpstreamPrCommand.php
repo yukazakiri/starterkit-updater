@@ -78,11 +78,8 @@ final class UpstreamPrCommand extends Command
             $localBranch = $currentBranch;
         }
 
-        // Upstream branch is always 'main' for Laravel starter kits
-        if ($upstreamBranch !== 'main') {
-            $this->line("📍 Using upstream branch: <info>main</info> (configured: $upstreamBranch)");
-            $upstreamBranch = 'main';
-        }
+        // Use configured upstream branch (defaults to 'main' for Laravel starter kits)
+        $this->line("📍 Using upstream branch: <info>$upstreamBranch</info>");
         $allowUnrelated = (bool) $cfg['allow_unrelated_histories'];
         $dry = (bool) $this->option('dry-run');
 
