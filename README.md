@@ -111,9 +111,22 @@ The package uses two important branch settings:
 - **`UPSTREAM_LOCAL_BRANCH`**: Your main project branch where PRs will be created against (e.g., `main`, `master`, `develop`)
 
 **Example scenarios:**
-- **Laravel Starter Kit**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=main` (your repo)
+- **Modern Project**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=main` (your repo)
 - **Legacy Project**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=master` (your repo)
-- **Development Branch**: `UPSTREAM_BRANCH=develop` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=develop` (your repo)
+- **Development Workflow**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=dev` (your repo)
+- **Feature Branch Workflow**: `UPSTREAM_BRANCH=develop` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=develop` (your repo)
+
+### Common Branch Naming Conventions
+
+Most projects use these branch naming patterns:
+
+- **`dev`** - Development branch (most common in many projects)
+- **`master`** - Traditional main branch (common in older projects)
+- **`main`** - Modern main branch (newer projects, GitHub default)
+- **`develop`** - GitFlow development branch
+- **`staging`** - Staging environment branch
+
+**Setup defaults to `dev`** as it's the most common development branch convention.
 
 ### Publish Configuration
 
@@ -159,7 +172,7 @@ Add these to your `.env` file:
 # Upstream repository configuration
 UPSTREAM_URL=https://github.com/your-upstream/repo.git
 UPSTREAM_BRANCH=main                    # Branch in upstream repo to pull from
-UPSTREAM_LOCAL_BRANCH=main              # Your main project branch (PRs created against this)
+UPSTREAM_LOCAL_BRANCH=dev               # Your main project branch (PRs created against this)
 UPSTREAM_STRATEGY=merge
 UPSTREAM_COMMIT_MESSAGE="chore(upstream): sync from upstream"
 UPSTREAM_ALLOW_UNRELATED=true

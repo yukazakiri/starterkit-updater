@@ -78,6 +78,9 @@ final class UpstreamCheckCommand extends Command
             // Get upstream commit
             $upstreamCommit = $git->run(['rev-parse', "$remoteName/$upstreamBranch"]);
             $this->line('📍 Latest upstream commit: <info>'.mb_substr($upstreamCommit, 0, 8).'</info>');
+            
+            // Show more detailed commit information
+            $this->showCommitDetails($git, $localCommit, $upstreamCommit);
 
             // Check if we're behind
             $isBehind = $this->isBehind($git, $localBranch, "$remoteName/$upstreamBranch");
@@ -93,11 +96,14 @@ final class UpstreamCheckCommand extends Command
                 $this->line('💡 To pull the updates, run:');
                 $this->line('   <info>php artisan laravelplus:update</info> (creates PR by default)');
                 $this->line('   <info>php artisan laravelplus:update --direct</info> (to apply directly)');
+                $this->newLine();
+                $this->line("🔗 PR will sync from upstream commit: <info>".mb_substr($upstreamCommit, 0, 8)."</info>");
 
                 return self::SUCCESS;
             }
             $this->newLine();
             $this->info('✅ You are up to date! No updates available.');
+            $this->line("📋 Last sync was from upstream commit: <info>".mb_substr($upstreamCommit, 0, 8)."</info>");
 
             return self::SUCCESS;
 
@@ -217,5 +223,31 @@ final class UpstreamCheckCommand extends Command
         }
 
         return $cfg;
+    }
+
+    private function showCommitDetails(VersionControl $git, string $localCommit, string $upstreamCommit): void
+    {
+        try {
+            // Get commit messages
+            $localMessage = $git->run(['log', '--format=%s', '-n', '1', $localCommit]);
+            $upstreamMessage = $git->run(['log', '--format=%s', '-n', '1', $upstreamCommit]);
+            
+            // Get commit dates
+            $localDate = $git->run(['log', '--format=%ci', '-n', '1', $localCommit]);
+            $upstreamDate = $git->run(['log', '--format=%ci', '-n', '1', $upstreamCommit]);
+            
+            $this->newLine();
+            $this->line('📝 <comment>Commit Details:</comment>');
+            $this->line("   Local: <info>".mb_substr($localCommit, 0, 8)."</info> - ".mb_trim($localMessage));
+            $this->line("   Upstream: <info>".mb_substr($upstreamCommit, 0, 8)."</info> - ".mb_trim($upstreamMessage));
+            
+            // Show dates
+            $this->line('📅 <comment>Last Updated:</comment>');
+            $this->line("   Local: <info>".date('Y-m-d H:i:s', strtotime($localDate))."</info>");
+            $this->line("   Upstream: <info>".date('Y-m-d H:i:s', strtotime($upstreamDate))."</info>");
+            
+        } catch (Throwable) {
+            // If we can't get commit details, just continue silently
+        }
     }
 }

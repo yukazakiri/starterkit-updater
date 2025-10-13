@@ -94,8 +94,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         // Ask for local branch (what branch to create PRs against)
         $localBranch = $this->text(
             'Which local branch should receive the updates? (PRs will be created against this branch)',
-            default: 'main',
-            placeholder: 'e.g., main, master, develop (your main project branch)'
+            default: 'dev',
+            placeholder: 'e.g., master, dev, main (your main project branch)'
         );
 
         // Update .env file
@@ -145,8 +145,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
 
         $localBranch = $this->text(
             'Which local branch should receive the updates? (PRs will be created against this branch)',
-            default: 'main',
-            placeholder: 'e.g., main, master, develop (your main project branch)'
+            default: 'dev',
+            placeholder: 'e.g., master, dev, main (your main project branch)'
         );
 
         $this->info('Setting up upstream sync for custom repository...');
