@@ -7,6 +7,7 @@ namespace LaravelPlus\LaravelUpdater\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use LaravelPlus\LaravelUpdater\Support\VersionControl;
+use RuntimeException;
 use Throwable;
 
 final class UpstreamUpgradeCommand extends Command
@@ -24,7 +25,9 @@ final class UpstreamUpgradeCommand extends Command
         {--remote-name=upstream : Remote name to use}
         {--pr-branch= : Override PR branch name}
         {--pr-title= : Override PR title}
-        {--pr-body= : Override PR body}';
+        {--pr-body= : Override PR body}
+        {--force-conflicts : Force PR creation even with merge conflicts}
+        {--force-push : Force push the PR branch even if conflicts exist}';
 
     protected $description = 'Upgrade your project with the latest changes from upstream repository (creates PR by default).';
 
@@ -119,7 +122,7 @@ final class UpstreamUpgradeCommand extends Command
     private function createPullRequest(): int
     {
         $this->info('🚀 Creating pull request with upstream updates...');
-        
+
         $cfg = config('upstream', []);
         $cfg = $this->applyDefaultPreset($cfg);
 
@@ -151,6 +154,7 @@ final class UpstreamUpgradeCommand extends Command
 
         if (! in_array($strategy, ['merge', 'rebase'], true)) {
             $this->error('Invalid strategy. Use merge|rebase.');
+
             return self::FAILURE;
         }
 
@@ -168,11 +172,11 @@ final class UpstreamUpgradeCommand extends Command
 
         // Show repository information
         $this->showRepositoryInfo($git, $upstreamUrl);
-        
+
         $this->line("📝 PR Branch: <info>$prBranch</info>");
         $this->line("🎯 Target Branch: <info>$localBranch</info>");
         $this->line("📋 PR Title: <info>$prTitle</info>");
-        
+
         if ($dry) {
             $this->newLine();
             $this->line('🔍 <comment>What will happen:</comment>');
@@ -184,7 +188,7 @@ final class UpstreamUpgradeCommand extends Command
             $this->line('   6. 🎯 Create GitHub pull request');
             $this->newLine();
         }
-        
+
         $this->newLine();
 
         // Ensure remote exists
@@ -206,29 +210,88 @@ final class UpstreamUpgradeCommand extends Command
         // Create and checkout PR branch
         $run('create PR branch', [$cfg['git_binary'], 'checkout', '-b', $prBranch]);
 
-        // Merge or rebase
+        // Merge or rebase with conflict handling
         if ($strategy === 'merge') {
             $args = [$cfg['git_binary'], 'merge', "$remoteName/$upstreamBranch", '--no-edit'];
             if ($allowUnrelated) {
                 $args[] = '--allow-unrelated-histories';
             }
-            $run('merge', $args);
+
+            try {
+                $run('merge', $args);
+            } catch (RuntimeException $e) {
+                // Handle merge conflicts by creating PR with conflicts
+                $this->warn('⚠️  Merge conflicts detected. Creating PR with conflicts for manual resolution on GitHub.');
+                $this->line('💡 You can resolve conflicts directly on GitHub or locally and push updates.');
+
+                // Check if there are conflicts
+                $status = $git->run(['status', '--porcelain'], throw: false);
+                if (str_contains($status, 'UU') || str_contains($status, 'AA') || str_contains($status, 'DD')) {
+                    $this->line('🔧 Conflicts found in:');
+                    $conflictFiles = array_filter(explode("\n", $status), function ($line) {
+                        return str_contains($line, 'UU') || str_contains($line, 'AA') || str_contains($line, 'DD');
+                    });
+                    foreach ($conflictFiles as $file) {
+                        $this->line('   - '.mb_trim(mb_substr($file, 3)));
+                    }
+                }
+
+                // Continue with PR creation even with conflicts
+            }
         } else {
-            $run('rebase', [$cfg['git_binary'], 'rebase', "$remoteName/$upstreamBranch"]);
+            try {
+                $run('rebase', [$cfg['git_binary'], 'rebase', "$remoteName/$upstreamBranch"]);
+            } catch (RuntimeException $e) {
+                // Handle rebase conflicts
+                $this->warn('⚠️  Rebase conflicts detected. Creating PR with conflicts for manual resolution on GitHub.');
+                $this->line('💡 You can resolve conflicts directly on GitHub or locally and push updates.');
+
+                // Abort the rebase to get back to a clean state
+                try {
+                    $git->run(['rebase', '--abort'], throw: false);
+                } catch (Throwable) {
+                    // Ignore abort errors
+                }
+
+                // Continue with PR creation
+            }
         }
 
-        // Commit (only if there are changes to commit)
+        // Commit (always commit, even with conflicts)
         try {
             $status = $git->run(['status', '--porcelain'], throw: false);
+            $hasConflicts = str_contains($status, 'UU') || str_contains($status, 'AA') || str_contains($status, 'DD');
+
             if (! in_array(mb_trim($status), ['', '0'], true)) {
-                $run('commit (ensure clean msg)', [$cfg['git_binary'], 'commit', '--no-edit', '-m', $cfg['commit_message']]);
+                if ($hasConflicts) {
+                    $commitMessage = $cfg['commit_message'].' (with merge conflicts)';
+                    $this->line('📝 Committing changes with merge conflicts for PR creation...');
+                } else {
+                    $commitMessage = $cfg['commit_message'];
+                }
+                $run('commit (ensure clean msg)', [$cfg['git_binary'], 'commit', '--no-edit', '-m', $commitMessage]);
             }
         } catch (Throwable) {
             // Ignore commit errors - might be nothing to commit
         }
 
-        // Push PR branch
-        $run('push PR branch', [$cfg['git_binary'], 'push', 'origin', $prBranch]);
+        // Push PR branch (force push if requested or if conflicts exist)
+        $status = $git->run(['status', '--porcelain'], throw: false);
+        $hasConflicts = str_contains($status, 'UU') || str_contains($status, 'AA') || str_contains($status, 'DD');
+        $forcePush = $this->option('force-push') || $hasConflicts;
+
+        if ($forcePush) {
+            $this->line('🚀 Force pushing PR branch (conflicts detected or --force-push specified)...');
+            $run('force push PR branch', [$cfg['git_binary'], 'push', '--force', 'origin', $prBranch]);
+        } else {
+            try {
+                $run('push PR branch', [$cfg['git_binary'], 'push', 'origin', $prBranch]);
+            } catch (Throwable $e) {
+                // If normal push fails, try force push
+                $this->warn('⚠️  Normal push failed, trying force push...');
+                $run('force push PR branch', [$cfg['git_binary'], 'push', '--force', 'origin', $prBranch]);
+            }
+        }
 
         // Post hooks
         if (! $this->option('no-post')) {
@@ -238,6 +301,23 @@ final class UpstreamUpgradeCommand extends Command
         // Create GitHub PR
         $prCreated = null;
         if (! $dry) {
+            // Check for conflicts and update PR body
+            $status = $git->run(['status', '--porcelain'], throw: false);
+            $hasConflicts = str_contains($status, 'UU') || str_contains($status, 'AA') || str_contains($status, 'DD');
+
+            if ($hasConflicts) {
+                $conflictFiles = array_filter(explode("\n", $status), function ($line) {
+                    return str_contains($line, 'UU') || str_contains($line, 'AA') || str_contains($line, 'DD');
+                });
+
+                $conflictList = '';
+                foreach ($conflictFiles as $file) {
+                    $conflictList .= '- '.mb_trim(mb_substr($file, 3))."\n";
+                }
+
+                $prBody .= "\n\n## ⚠️ Merge Conflicts Detected\n\nThis PR contains merge conflicts that need to be resolved:\n\n".$conflictList."\nPlease resolve these conflicts before merging.";
+            }
+
             $prCreated = $this->createGitHubPr($cfg, $prBranch, $localBranch, $prTitle, $prBody, $upstreamUrl);
         }
 
@@ -247,6 +327,16 @@ final class UpstreamUpgradeCommand extends Command
             $this->line('💡 Run without <comment>--dry-run</comment> to execute the pull request creation.');
         } elseif ($prCreated === true) {
             $this->info('✅ Pull request created successfully!');
+
+            // Check if there were conflicts
+            $status = $git->run(['status', '--porcelain'], throw: false);
+            $hasConflicts = str_contains($status, 'UU') || str_contains($status, 'AA') || str_contains($status, 'DD');
+
+            if ($hasConflicts) {
+                $this->newLine();
+                $this->warn('⚠️  This PR contains merge conflicts that need to be resolved on GitHub.');
+                $this->line('💡 You can resolve conflicts directly on GitHub or locally and push updates.');
+            }
         } else {
             // Error details already printed inside createGitHubPr()
             return self::FAILURE;
@@ -258,7 +348,7 @@ final class UpstreamUpgradeCommand extends Command
     private function directUpgrade(): int
     {
         $this->info('🚀 Upgrading with upstream updates...');
-        
+
         // Build command arguments for sync command
         $arguments = [];
         if ($this->option('dry-run')) {
@@ -451,15 +541,15 @@ final class UpstreamUpgradeCommand extends Command
         try {
             // Get local repository URL
             $localUrl = $git->run(['remote', 'get-url', 'origin'], throw: false);
-            if (!$localUrl) {
+            if (! $localUrl) {
                 $localUrl = 'Local repository (no origin remote)';
             }
-            
+
             $this->line('🏠 <comment>Repository Information:</comment>');
             $this->line("   Local: <info>$localUrl</info>");
             $this->line("   Upstream: <info>$upstreamUrl</info>");
             $this->newLine();
-            
+
         } catch (Throwable) {
             // If we can't get repository info, just continue silently
         }
@@ -487,6 +577,7 @@ final class UpstreamUpgradeCommand extends Command
         if (! $token || ! $owner || ! $repo) {
             $this->warn('⚠️  GitHub credentials not configured. Please set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_REPO in your .env file.');
             $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
+
             return false;
         }
 
@@ -505,6 +596,7 @@ final class UpstreamUpgradeCommand extends Command
 
         if ($response && isset($response['html_url'])) {
             $this->info("✅ Pull request created: {$response['html_url']}");
+
             return true;
         }
 
@@ -579,7 +671,7 @@ final class UpstreamUpgradeCommand extends Command
                 });
 
                 if (! $process->isSuccessful()) {
-                    throw new \RuntimeException(in_array($process->getErrorOutput(), ['', '0'], true) ? $process->getOutput() : $process->getErrorOutput());
+                    throw new RuntimeException(in_array($process->getErrorOutput(), ['', '0'], true) ? $process->getOutput() : $process->getErrorOutput());
                 }
             }
         }
