@@ -178,16 +178,20 @@ final class UpstreamPrCommand extends Command
         }
 
         // Create GitHub PR
+        $prCreated = null;
         if (! $dry) {
-            $this->createGitHubPr($cfg, $prBranch, $localBranch, $prTitle, $prBody, $upstreamUrl);
+            $prCreated = $this->createGitHubPr($cfg, $prBranch, $localBranch, $prTitle, $prBody, $upstreamUrl);
         }
 
         if ($dry) {
             $this->newLine();
             $this->info('✅ Dry run complete - no changes were made.');
             $this->line('💡 Run without <comment>--dry-run</comment> to execute the pull request creation.');
-        } else {
+        } elseif ($prCreated === true) {
             $this->info('✅ Pull request created successfully!');
+        } else {
+            // Error details already printed inside createGitHubPr()
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
@@ -234,7 +238,7 @@ final class UpstreamPrCommand extends Command
         return $prefix.$timestamp;
     }
 
-    private function createGitHubPr(array $cfg, string $prBranch, string $targetBranch, string $title, string $body, string $upstreamUrl): void
+    private function createGitHubPr(array $cfg, string $prBranch, string $targetBranch, string $title, string $body, string $upstreamUrl): bool
     {
         $token = $cfg['github_token'];
         $owner = $cfg['github_owner'];
@@ -243,8 +247,7 @@ final class UpstreamPrCommand extends Command
         if (! $token || ! $owner || ! $repo) {
             $this->warn('⚠️  GitHub credentials not configured. Please set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_REPO in your .env file.');
             $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
-
-            return;
+            return false;
         }
 
         $this->line('📤 Creating GitHub pull request...');
@@ -262,10 +265,14 @@ final class UpstreamPrCommand extends Command
 
         if ($response && isset($response['html_url'])) {
             $this->info("✅ Pull request created: {$response['html_url']}");
-        } else {
-            $this->error('❌ Failed to create pull request.');
-            $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
+            return true;
         }
+
+        // Failed
+        $this->error('❌ Failed to create pull request.');
+        $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
+
+        return false;
     }
 
     private function makeGitHubRequest(string $token, string $owner, string $repo, array $data): ?array
