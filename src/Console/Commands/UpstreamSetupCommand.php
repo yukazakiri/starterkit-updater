@@ -6,6 +6,7 @@ namespace LaravelPlus\LaravelUpdater\Console\Commands;
 
 use Illuminate\Support\Facades\File;
 use LaravelPlus\LaravelUpdater\Traits\HasPrompts;
+use LaravelPlus\LaravelUpdater\Support\VersionControl;
 
 final class UpstreamSetupCommand extends AbstractUpstreamCommand
 {
@@ -106,6 +107,9 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             'UPSTREAM_PRESET' => $preset,
         ]);
 
+        // Optional GitHub PR auto-creation setup
+        $this->setupGitHubPrOption();
+
         // Update config file if needed
         if ($this->option('force') || $this->confirmPrompt('Update config/upstream.php with preset hooks?', default: true)) {
             $this->updateConfigFile($config);
@@ -159,6 +163,9 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             'UPSTREAM_LOCAL_BRANCH' => $localBranch,
             'UPSTREAM_PRESET' => 'custom',
         ]);
+
+        // Optional GitHub PR auto-creation setup
+        $this->setupGitHubPrOption();
 
         $this->newLine();
         $this->info('✅ Custom setup complete!');
@@ -233,5 +240,71 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         }
 
         File::put($configPath, $configContent);
+    }
+
+    /**
+     * Optionally configure GitHub PR auto-creation.
+     */
+    private function setupGitHubPrOption(): void
+    {
+        $this->newLine();
+        $this->line('<comment>Optional: Auto-create GitHub Pull Requests</comment>');
+        $this->line('If enabled, the updater will call the GitHub API to create the PR for you.');
+        $this->line('If disabled, it will push a branch and print a compare URL for manual PR creation.');
+        $this->newLine();
+
+        $enable = $this->confirmPrompt('Enable auto-creating PRs via GitHub API?', default: false);
+        if (! $enable) {
+            return;
+        }
+
+        // Try to infer owner/repo from origin remote
+        $owner = (string) (config('upstream.github_owner') ?: '');
+        $repo = (string) (config('upstream.github_repo') ?: '');
+
+        if ($owner === '' || $repo === '') {
+            try {
+                $git = new VersionControl(
+                    bin: (string) (config('upstream.git_binary') ?: 'git'),
+                    cwd: (string) (config('upstream.working_dir') ?: base_path())
+                );
+                $origin = $git->run(['remote', 'get-url', 'origin'], throw: false);
+                if ($origin) {
+                    // Supported formats:
+                    // - git@github.com:Owner/Repo.git
+                    // - https://github.com/Owner/Repo.git
+                    // - https://github.com/Owner/Repo
+                    $normalized = rtrim(preg_replace('/\.git$/', '', (string) $origin) ?? '', '/');
+                    if (preg_match('#[:/]([^/]+)/([^/]+)$#', (string) $normalized, $m)) {
+                        $owner = $owner !== '' ? $owner : (string) $m[1];
+                        $repo = $repo !== '' ? $repo : (string) $m[2];
+                    }
+                }
+            } catch (\Throwable) {
+                // ignore
+            }
+        }
+
+        $owner = $this->text('GitHub owner (organization or username)', default: $owner ?: '');
+        $repo = $this->text('GitHub repository name', default: $repo ?: '');
+
+        $this->line('You need a GitHub token to create PRs automatically:');
+        $this->line('- Classic PAT: grant repo scope');
+        $this->line('- Fine-grained PAT: grant Pull requests: Read and write, Contents: Read and write');
+        $this->line('You can also use CI’s built-in GITHUB_TOKEN with appropriate permissions.');
+        $token = $this->secret('GitHub token (leave blank to skip for now)');
+
+        // Save what we have; token can be empty (manual PR fallback)
+        $this->updateEnvFile([
+            'GITHUB_OWNER' => $owner,
+            'GITHUB_REPO' => $repo,
+        ] + ($token ? ['GITHUB_TOKEN' => $token] : []));
+
+        $this->newLine();
+        if ($token) {
+            $this->info('✅ GitHub PR auto-creation enabled.');
+        } else {
+            $this->warn('⚠️  Token not provided. PRs will be pushed and a compare URL will be printed.');
+        }
     }
 }
