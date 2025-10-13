@@ -266,6 +266,9 @@ final class UpstreamUpgradeCommand extends Command
                 if ($hasConflicts) {
                     $commitMessage = $cfg['commit_message'].' (with merge conflicts)';
                     $this->line('📝 Committing changes with merge conflicts for PR creation...');
+                    
+                    // Add all conflicted files to ensure upstream changes are included
+                    $run('add conflicted files', [$cfg['git_binary'], 'add', '.']);
                 } else {
                     $commitMessage = $cfg['commit_message'];
                 }
