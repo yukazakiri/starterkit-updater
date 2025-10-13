@@ -232,7 +232,7 @@ final class UpstreamPrCommand extends Command
             return $customBranch;
         }
 
-        $prefix = $cfg['pr_branch_prefix'] ?? 'upstream-sync-';
+        $prefix = $cfg['pr_branch_prefix'] ?? 'laravelplus-updater-';
         $timestamp = now()->format('Y-m-d-H-i-s');
 
         return $prefix.$timestamp;

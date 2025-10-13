@@ -89,7 +89,7 @@ return [
     |
     */
     'create_pr' => env('UPSTREAM_CREATE_PR', false),
-    'pr_branch_prefix' => env('UPSTREAM_PR_BRANCH_PREFIX', 'upstream-sync-'),
+    'pr_branch_prefix' => env('UPSTREAM_PR_BRANCH_PREFIX', 'laravelplus-updater-'),
     'pr_title' => env('UPSTREAM_PR_TITLE', 'chore: sync from upstream'),
     'pr_body' => env('UPSTREAM_PR_BODY', 'Automated upstream sync from {upstream_url}'),
     'github_token' => env('GITHUB_TOKEN'),
