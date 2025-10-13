@@ -12,6 +12,21 @@
 
 A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package is exclusively designed for Laravel 12** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
 
+## 🚀 Simple 3-Step Workflow
+
+```bash
+# 1. Setup (one-time)
+php artisan laravelplus:setup
+
+# 2. Check for updates
+php artisan laravelplus:check
+
+# 3. Apply updates (creates PR by default)
+php artisan laravelplus:update
+```
+
+That's it! No complex commands to remember - just 3 simple steps to keep your Laravel starter kit up to date.
+
 ## ⚠️ Laravel 12 Exclusive
 
 > **Important**: This package is **exclusively designed for Laravel 12** and will not work with older Laravel versions. It leverages Laravel 12's modern architecture and features to provide the best possible experience.
@@ -32,6 +47,11 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - 🤝 **Contribute** - Make Laravel better for everyone
 
 ## ✨ Features
+
+### 🎯 **Simple & Powerful**
+- **3 Essential Commands** - `setup`, `check`, `update` - that's it!
+- **PR-First Workflow** - Always creates pull requests by default for safety
+- **Smart Configuration** - Auto-detects your setup and guides you through configuration
 
 ### 🔄 **Core Functionality**
 - **Universal Git Support** - GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted
@@ -217,49 +237,49 @@ php artisan laravelplus:update --direct
 
 #### Vue Starter Kit
 ```bash
-# Setup for Vue starter kit
+# 1. Setup for Vue starter kit (one-time)
 php artisan laravelplus:setup --preset=vue
 
-# Check for updates
+# 2. Check for updates
 php artisan laravelplus:check
 
-# Upgrade with updates
+# 3. Apply updates (creates PR by default)
 php artisan laravelplus:update
 ```
 
 #### React Starter Kit
 ```bash
-# Setup for React starter kit
+# 1. Setup for React starter kit (one-time)
 php artisan laravelplus:setup --preset=react
 
-# Check for updates
+# 2. Check for updates
 php artisan laravelplus:check
 
-# Upgrade with updates
+# 3. Apply updates (creates PR by default)
 php artisan laravelplus:update
 ```
 
 #### Livewire Starter Kit
 ```bash
-# Setup for Livewire starter kit
+# 1. Setup for Livewire starter kit (one-time)
 php artisan laravelplus:setup --preset=livewire
 
-# Check for updates
+# 2. Check for updates
 php artisan laravelplus:check
 
-# Upgrade with updates
+# 3. Apply updates (creates PR by default)
 php artisan laravelplus:update
 ```
 
 #### Custom Repository
 ```bash
-# Setup for custom repository
+# 1. Setup for custom repository (one-time)
 php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 
-# Check for updates
+# 2. Check for updates
 php artisan laravelplus:check
 
-# Upgrade with updates
+# 3. Apply updates (creates PR by default)
 php artisan laravelplus:update
 ```
 
@@ -464,23 +484,17 @@ https://username:token@github.com/user/repo.git
 
 ## Available Commands
 
+### `laravelplus:setup`
+Interactive setup wizard for configuring the package. Run this once to get started.
+
 ### `laravelplus:check`
-Check if there are updates available from upstream repository.
+Check if there are updates available from upstream repository. Shows detailed information about available updates.
 
 ### `laravelplus:update`
 Upgrade your project with the latest changes from upstream. **Creates PRs by default** (recommended and safest).
 
 ### `laravelplus:update --direct`
 Apply changes directly without creating a pull request (use with caution).
-
-### `laravelplus:sync`
-Direct sync with upstream repository (merges directly to your branch).
-
-### `laravelplus:pr`
-Create a pull request with upstream updates (alternative to update --pr).
-
-### `laravelplus:setup`
-Interactive setup wizard for configuring the package.
 
 ## Command Options
 

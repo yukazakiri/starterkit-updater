@@ -87,12 +87,10 @@ final class UpstreamUpgradeCommand extends Command
         $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
         $localBranch = (string) ($this->option('local') ?: $cfg['local_branch']);
 
-        // Always use the current branch as local branch (could be master, main, dev, etc.)
+        // Use the configured local branch for checking updates
         $currentBranch = mb_trim($git->run(['rev-parse', '--abbrev-ref', 'HEAD']));
-        if ($localBranch !== $currentBranch) {
-            $this->line("📍 Using current branch: <info>$currentBranch</info> (configured: $localBranch)");
-            $localBranch = $currentBranch;
-        }
+        $this->line("📍 Current branch: <info>$currentBranch</info>");
+        $this->line("📍 Checking updates for: <info>$localBranch</info> (configured target branch)");
 
         // Upstream branch is always 'main' for Laravel starter kits
         if ($upstreamBranch !== 'main') {
@@ -121,45 +119,140 @@ final class UpstreamUpgradeCommand extends Command
     private function createPullRequest(): int
     {
         $this->info('🚀 Creating pull request with upstream updates...');
-        // Call the PR command with the same options
-        // Build command arguments
-        $arguments = [];
-        if ($this->option('dry-run')) {
-            $arguments['--dry-run'] = true;
-        }
-        if ($this->option('no-pre')) {
-            $arguments['--no-pre'] = true;
-        }
-        if ($this->option('no-post')) {
-            $arguments['--no-post'] = true;
-        }
-        if ($this->option('strategy')) {
-            $arguments['--strategy'] = $this->option('strategy');
-        }
-        if ($this->option('upstream')) {
-            $arguments['--upstream'] = $this->option('upstream');
-        }
-        if ($this->option('branch')) {
-            $arguments['--branch'] = $this->option('branch');
-        }
-        if ($this->option('local')) {
-            $arguments['--local'] = $this->option('local');
-        }
-        if ($this->option('remote-name')) {
-            $arguments['--remote-name'] = $this->option('remote-name');
-        }
-        if ($this->option('pr-branch')) {
-            $arguments['--pr-branch'] = $this->option('pr-branch');
-        }
-        if ($this->option('pr-title')) {
-            $arguments['--pr-title'] = $this->option('pr-title');
-        }
-        if ($this->option('pr-body')) {
-            $arguments['--pr-body'] = $this->option('pr-body');
+        
+        $cfg = config('upstream', []);
+        $cfg = $this->applyDefaultPreset($cfg);
+
+        $git = new VersionControl(
+            bin: (string) $cfg['git_binary'],
+            cwd: (string) $cfg['working_dir']
+        );
+
+        $remoteName = (string) $this->option('remote-name');
+        $upstreamUrl = (string) ($this->option('upstream') ?: $cfg['upstream_url']);
+        $upstreamBranch = (string) ($this->option('branch') ?: $cfg['upstream_branch']);
+        $localBranch = (string) ($this->option('local') ?: $cfg['local_branch']);
+        $strategy = Str::lower((string) ($this->option('strategy') ?: $cfg['strategy']));
+
+        // Use the configured local branch as the PR target (usually dev, master, main)
+        $currentBranch = mb_trim($git->run(['rev-parse', '--abbrev-ref', 'HEAD']));
+        $this->line("📍 Current branch: <info>$currentBranch</info>");
+        $this->line("📍 PR will target: <info>$localBranch</info> (configured target branch)");
+
+        // Use configured upstream branch (defaults to 'main' for Laravel starter kits)
+        $this->line("📍 Using upstream branch: <info>$upstreamBranch</info>");
+        $allowUnrelated = (bool) $cfg['allow_unrelated_histories'];
+        $dry = (bool) $this->option('dry-run');
+
+        // Generate PR branch name
+        $prBranch = $this->generatePrBranchName($cfg);
+        $prTitle = $this->option('pr-title') ?: $cfg['pr_title'];
+        $prBody = $this->option('pr-body') ?: $cfg['pr_body'];
+
+        if (! in_array($strategy, ['merge', 'rebase'], true)) {
+            $this->error('Invalid strategy. Use merge|rebase.');
+            return self::FAILURE;
         }
 
-        // Call the PR command directly
-        return $this->call('laravelplus:pr', $arguments);
+        $run = function (string $label, array $cmd) use ($git, $dry): void {
+            $this->line('<info>$ '.$this->pretty($cmd)."</info>  <comment>($label)</comment>");
+            if (! $dry) {
+                // Remove the git binary from the command since VersionControl::run() adds it
+                $args = array_slice($cmd, 1);
+                $out = $git->run($args);
+                if ($out !== '') {
+                    $this->line($out);
+                }
+            }
+        };
+
+        // Show repository information
+        $this->showRepositoryInfo($git, $upstreamUrl);
+        
+        $this->line("📝 PR Branch: <info>$prBranch</info>");
+        $this->line("🎯 Target Branch: <info>$localBranch</info>");
+        $this->line("📋 PR Title: <info>$prTitle</info>");
+        
+        if ($dry) {
+            $this->newLine();
+            $this->line('🔍 <comment>What will happen:</comment>');
+            $this->line('   1. 📡 Ensure upstream remote is configured');
+            $this->line('   2. 📥 Fetch latest changes from upstream');
+            $this->line('   3. 🌿 Create new PR branch from current branch');
+            $this->line('   4. 🔀 Merge upstream changes into PR branch');
+            $this->line('   5. 📤 Push PR branch to origin');
+            $this->line('   6. 🎯 Create GitHub pull request');
+            $this->newLine();
+        }
+        
+        $this->newLine();
+
+        // Ensure remote exists
+        if (! $git->hasRemote($remoteName)) {
+            $run('add remote', [$cfg['git_binary'], 'remote', 'add', $remoteName, $upstreamUrl]);
+        } else {
+            // keep URL up to date
+            $run('set-url', [$cfg['git_binary'], 'remote', 'set-url', $remoteName, $upstreamUrl]);
+        }
+
+        // Pre hooks
+        if (! $this->option('no-pre')) {
+            $this->execHooks('pre_update', $dry);
+        }
+
+        // Fetch upstream
+        $run('fetch upstream', [$cfg['git_binary'], 'fetch', $remoteName]);
+
+        // Create and checkout PR branch
+        $run('create PR branch', [$cfg['git_binary'], 'checkout', '-b', $prBranch]);
+
+        // Merge or rebase
+        if ($strategy === 'merge') {
+            $args = [$cfg['git_binary'], 'merge', "$remoteName/$upstreamBranch", '--no-edit'];
+            if ($allowUnrelated) {
+                $args[] = '--allow-unrelated-histories';
+            }
+            $run('merge', $args);
+        } else {
+            $run('rebase', [$cfg['git_binary'], 'rebase', "$remoteName/$upstreamBranch"]);
+        }
+
+        // Commit (only if there are changes to commit)
+        try {
+            $status = $git->run(['status', '--porcelain'], throw: false);
+            if (! in_array(mb_trim($status), ['', '0'], true)) {
+                $run('commit (ensure clean msg)', [$cfg['git_binary'], 'commit', '--no-edit', '-m', $cfg['commit_message']]);
+            }
+        } catch (Throwable) {
+            // Ignore commit errors - might be nothing to commit
+        }
+
+        // Push PR branch
+        $run('push PR branch', [$cfg['git_binary'], 'push', 'origin', $prBranch]);
+
+        // Post hooks
+        if (! $this->option('no-post')) {
+            $this->execHooks('post_update', $dry);
+        }
+
+        // Create GitHub PR
+        $prCreated = null;
+        if (! $dry) {
+            $prCreated = $this->createGitHubPr($cfg, $prBranch, $localBranch, $prTitle, $prBody, $upstreamUrl);
+        }
+
+        if ($dry) {
+            $this->newLine();
+            $this->info('✅ Dry run complete - no changes were made.');
+            $this->line('💡 Run without <comment>--dry-run</comment> to execute the pull request creation.');
+        } elseif ($prCreated === true) {
+            $this->info('✅ Pull request created successfully!');
+        } else {
+            // Error details already printed inside createGitHubPr()
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     private function directUpgrade(): int
@@ -351,5 +444,145 @@ final class UpstreamUpgradeCommand extends Command
         } catch (Throwable) {
             return false;
         }
+    }
+
+    private function showRepositoryInfo(VersionControl $git, string $upstreamUrl): void
+    {
+        try {
+            // Get local repository URL
+            $localUrl = $git->run(['remote', 'get-url', 'origin'], throw: false);
+            if (!$localUrl) {
+                $localUrl = 'Local repository (no origin remote)';
+            }
+            
+            $this->line('🏠 <comment>Repository Information:</comment>');
+            $this->line("   Local: <info>$localUrl</info>");
+            $this->line("   Upstream: <info>$upstreamUrl</info>");
+            $this->newLine();
+            
+        } catch (Throwable) {
+            // If we can't get repository info, just continue silently
+        }
+    }
+
+    private function generatePrBranchName(array $cfg): string
+    {
+        $customBranch = $this->option('pr-branch');
+        if ($customBranch) {
+            return $customBranch;
+        }
+
+        $prefix = $cfg['pr_branch_prefix'] ?? 'laravelplus-updater-';
+        $timestamp = now()->format('Y-m-d-H-i-s');
+
+        return $prefix.$timestamp;
+    }
+
+    private function createGitHubPr(array $cfg, string $prBranch, string $targetBranch, string $title, string $body, string $upstreamUrl): bool
+    {
+        $token = $cfg['github_token'];
+        $owner = $cfg['github_owner'];
+        $repo = $cfg['github_repo'];
+
+        if (! $token || ! $owner || ! $repo) {
+            $this->warn('⚠️  GitHub credentials not configured. Please set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_REPO in your .env file.');
+            $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
+            return false;
+        }
+
+        $this->line('📤 Creating GitHub pull request...');
+
+        $body = str_replace('{upstream_url}', $upstreamUrl, $body);
+
+        $data = [
+            'title' => $title,
+            'body' => $body,
+            'head' => $prBranch,
+            'base' => $targetBranch,
+        ];
+
+        $response = $this->makeGitHubRequest($token, $owner, $repo, $data);
+
+        if ($response && isset($response['html_url'])) {
+            $this->info("✅ Pull request created: {$response['html_url']}");
+            return true;
+        }
+
+        // Failed
+        $this->error('❌ Failed to create pull request.');
+        $this->line("🔗 You can manually create a PR at: https://github.com/$owner/$repo/compare/$targetBranch...$prBranch");
+
+        return false;
+    }
+
+    private function makeGitHubRequest(string $token, string $owner, string $repo, array $data): ?array
+    {
+        $url = "https://api.github.com/repos/$owner/$repo/pulls";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: token '.$token,
+            'Accept: application/vnd.github.v3+json',
+            'Content-Type: application/json',
+        ]);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Laravel-Updater/1.0');
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 201) {
+            return json_decode($response, true);
+        }
+
+        $this->error("GitHub API error: HTTP $httpCode");
+        if ($response) {
+            $error = json_decode($response, true);
+            if (isset($error['message'])) {
+                $this->error("Error: {$error['message']}");
+            }
+        }
+
+        return null;
+    }
+
+    private function pretty(array $cmd): string
+    {
+        return collect($cmd)->map(fn ($p) => str_contains((string) $p, ' ') ? escapeshellarg((string) $p) : $p)->implode(' ');
+    }
+
+    private function execHooks(string $key, bool $dry): void
+    {
+        $hooks = (array) config("upstream.$key", []);
+        if ($hooks === []) {
+            return;
+        }
+
+        $this->newLine();
+        $this->line("<comment>Running {$key} hooks...</comment>");
+        foreach ($hooks as $cmdline) {
+            $this->line("<info>$ {$cmdline}</info>");
+            if (! $dry) {
+                $process = \Symfony\Component\Process\Process::fromShellCommandline(
+                    $cmdline,
+                    (string) config('upstream.working_dir'),
+                    null,
+                    null,
+                    1800
+                );
+                $process->setTimeout(1800)->run(function ($type, $buffer): void {
+                    echo $buffer;
+                });
+
+                if (! $process->isSuccessful()) {
+                    throw new \RuntimeException(in_array($process->getErrorOutput(), ['', '0'], true) ? $process->getOutput() : $process->getErrorOutput());
+                }
+            }
+        }
+        $this->newLine();
     }
 }

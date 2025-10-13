@@ -6,9 +6,7 @@ namespace LaravelPlus\LaravelUpdater;
 
 use Illuminate\Support\ServiceProvider;
 use LaravelPlus\LaravelUpdater\Console\Commands\UpstreamCheckCommand;
-use LaravelPlus\LaravelUpdater\Console\Commands\UpstreamPrCommand;
 use LaravelPlus\LaravelUpdater\Console\Commands\UpstreamSetupCommand;
-use LaravelPlus\LaravelUpdater\Console\Commands\UpstreamSyncCommand;
 use LaravelPlus\LaravelUpdater\Console\Commands\UpstreamUpgradeCommand;
 
 final class LaravelUpdaterServiceProvider extends ServiceProvider
@@ -17,9 +15,7 @@ final class LaravelUpdaterServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                UpstreamSyncCommand::class,
                 UpstreamSetupCommand::class,
-                UpstreamPrCommand::class,
                 UpstreamCheckCommand::class,
                 UpstreamUpgradeCommand::class,
             ]);
