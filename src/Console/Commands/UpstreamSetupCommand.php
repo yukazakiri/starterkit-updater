@@ -24,6 +24,11 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->displayLogo();
         $this->displayWelcomeMessage();
 
+        // Check Laravel version compatibility
+        if (!$this->checkLaravelVersion()) {
+            return self::FAILURE;
+        }
+
         $this->info('🚀 Laravel Updater Setup');
         $this->newLine();
 
@@ -68,6 +73,37 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->line('');
         $this->line('<fg=blue>   ═══════════════════════════════════════════════════════════ </>');
         $this->line('');
+    }
+
+    private function checkLaravelVersion(): bool
+    {
+        $laravelVersion = app()->version();
+        $versionNumber = (float) substr($laravelVersion, 0, 3);
+        
+        if ($versionNumber < 12.0) {
+            $this->error('❌ Laravel Version Incompatible');
+            $this->newLine();
+            $this->line('🚫 <error>Laravel Updater requires Laravel 12.0 or higher</error>');
+            $this->line("📍 Your current version: <comment>$laravelVersion</comment>");
+            $this->line('📍 Required version: <info>12.0+</info>');
+            $this->newLine();
+            $this->line('🔧 <comment>To update Laravel:</comment>');
+            $this->line('   1. Update your composer.json to require "laravel/framework": "^12.0"');
+            $this->line('   2. Run: <info>composer update laravel/framework</info>');
+            $this->line('   3. Update your application code for Laravel 12 compatibility');
+            $this->line('   4. Run this setup command again');
+            $this->newLine();
+            $this->line('📚 <comment>Laravel 12 Upgrade Guide:</comment>');
+            $this->line('   • <info>https://laravel.com/docs/12.x/upgrade</info>');
+            $this->newLine();
+            
+            return false;
+        }
+        
+        $this->line("✅ Laravel version check passed: <info>$laravelVersion</info>");
+        $this->newLine();
+        
+        return true;
     }
 
     private function setupPreset(string $preset): int
@@ -123,7 +159,20 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->line("📍 Local Branch: $localBranch (your main project branch)");
 
         $this->newLine();
-        $this->line('💡 You can now run: <info>php artisan laravelplus:check</info>');
+        $this->line('🚀 <comment>Next Steps:</comment>');
+        $this->line('   1. 💡 Run <info>php artisan laravelplus:check</info> to see what updates are available');
+        $this->line('   2. 💡 Run <info>php artisan laravelplus:update</info> to create a PR with upstream changes');
+        $this->newLine();
+        $this->line('🔍 <comment>What will happen when you run these commands:</comment>');
+        $this->line('   • <info>laravelplus:check</info> - Shows detailed information about available updates');
+        $this->line('   • <info>laravelplus:update</info> - Creates a new branch and PR with upstream changes');
+        $this->line('   • PRs target your <info>' . $localBranch . '</info> branch for safe review');
+        $this->line('   • You can review changes on GitHub before merging');
+        $this->newLine();
+        $this->line('🛡️ <comment>Safety Features:</comment>');
+        $this->line('   • Always creates PRs by default (no direct merges)');
+        $this->line('   • Dry-run mode available with <info>--dry-run</info> flag');
+        $this->line('   • Comprehensive testing before applying changes');
 
         return self::SUCCESS;
     }
@@ -175,7 +224,20 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->line("📍 Local Branch: $localBranch (your main project branch)");
 
         $this->newLine();
-        $this->line('💡 You can now run: <info>php artisan laravelplus:check</info>');
+        $this->line('🚀 <comment>Next Steps:</comment>');
+        $this->line('   1. 💡 Run <info>php artisan laravelplus:check</info> to see what updates are available');
+        $this->line('   2. 💡 Run <info>php artisan laravelplus:update</info> to create a PR with upstream changes');
+        $this->newLine();
+        $this->line('🔍 <comment>What will happen when you run these commands:</comment>');
+        $this->line('   • <info>laravelplus:check</info> - Shows detailed information about available updates');
+        $this->line('   • <info>laravelplus:update</info> - Creates a new branch and PR with upstream changes');
+        $this->line('   • PRs target your <info>' . $localBranch . '</info> branch for safe review');
+        $this->line('   • You can review changes on GitHub before merging');
+        $this->newLine();
+        $this->line('🛡️ <comment>Safety Features:</comment>');
+        $this->line('   • Always creates PRs by default (no direct merges)');
+        $this->line('   • Dry-run mode available with <info>--dry-run</info> flag');
+        $this->line('   • Comprehensive testing before applying changes');
 
         return self::SUCCESS;
     }
