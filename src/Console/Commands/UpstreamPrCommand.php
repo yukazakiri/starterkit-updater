@@ -28,6 +28,19 @@ final class UpstreamPrCommand extends Command
 
     protected $description = 'Create a pull request with upstream updates instead of direct merge.';
 
+    private readonly VersionControl $versionControl;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $config = config('upstream', []);
+        $this->versionControl = new VersionControl(
+            bin: (string) ($config['git_binary'] ?? 'git'),
+            cwd: (string) ($config['working_dir'] ?? base_path())
+        );
+    }
+
     public function handle(): int
     {
         $this->displayLogo();
@@ -251,36 +264,39 @@ final class UpstreamPrCommand extends Command
         return null;
     }
 
-    private function applyDefaultPreset(array $cfg): array
+    /**
+     * Apply default preset configuration if none is set.
+     */
+    private function applyDefaultPreset(array $config): array
     {
         // Check if we already have a specific upstream URL configured
-        if (! empty($cfg['upstream_url']) && $cfg['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
-            return $cfg;
+        if (! empty($config['upstream_url']) && $config['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
+            return $config;
         }
 
         // Check if we have a default preset configured
-        $defaultPreset = $cfg['default_preset'] ?? null;
-        if (! $defaultPreset || ! isset($cfg['presets'][$defaultPreset])) {
-            return $cfg;
+        $defaultPreset = $config['default_preset'] ?? null;
+        if (! $defaultPreset || ! isset($config['presets'][$defaultPreset])) {
+            return $config;
         }
 
         // Apply the default preset configuration
-        $preset = $cfg['presets'][$defaultPreset];
+        $preset = $config['presets'][$defaultPreset];
 
         // Merge preset configuration with existing config
-        $cfg['upstream_url'] = $preset['upstream_url'];
-        $cfg['upstream_branch'] = $preset['upstream_branch'] ?? $cfg['upstream_branch'];
+        $config['upstream_url'] = $preset['upstream_url'];
+        $config['upstream_branch'] = $preset['upstream_branch'] ?? $config['upstream_branch'];
 
         // Merge hooks if they exist in the preset
         if (isset($preset['post_update'])) {
-            $cfg['post_update'] = array_merge($cfg['post_update'], $preset['post_update']);
+            $config['post_update'] = array_merge($config['post_update'], $preset['post_update']);
         }
 
         if (isset($preset['pre_update'])) {
-            $cfg['pre_update'] = array_merge($cfg['pre_update'], $preset['pre_update']);
+            $config['pre_update'] = array_merge($config['pre_update'], $preset['pre_update']);
         }
 
-        return $cfg;
+        return $config;
     }
 
     private function execHooks(string $key, bool $dry): void

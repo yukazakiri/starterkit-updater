@@ -12,7 +12,7 @@ use Throwable;
 final class UpstreamUpgradeCommand extends Command
 {
     protected $signature = 'laravelplus:update
-        {--pr : Create a pull request instead of direct merge}
+        {--direct : Apply changes directly without creating a pull request}
         {--dry-run : Show what would happen without executing}
         {--test : Test configuration and connectivity before upgrade}
         {--no-pre  : Skip pre_update hooks}
@@ -26,13 +26,13 @@ final class UpstreamUpgradeCommand extends Command
         {--pr-title= : Override PR title}
         {--pr-body= : Override PR body}';
 
-    protected $description = 'Upgrade your project with the latest changes from upstream repository.';
+    protected $description = 'Upgrade your project with the latest changes from upstream repository (creates PR by default).';
 
     public function handle(): int
     {
         $this->displayLogo();
 
-        $cfg = config('upstream');
+        $cfg = config('upstream', []);
 
         // Apply default preset if no specific configuration is set
         $cfg = $this->applyDefaultPreset($cfg);
@@ -58,8 +58,8 @@ final class UpstreamUpgradeCommand extends Command
             $this->newLine();
         }
 
-        // Route to appropriate command
-        if ($this->option('pr')) {
+        // Route to appropriate command (default to PR creation)
+        if (! $this->option('direct')) {
             return $this->createPullRequest();
         }
 
@@ -122,57 +122,79 @@ final class UpstreamUpgradeCommand extends Command
     {
         $this->info('🚀 Creating pull request with upstream updates...');
         // Call the PR command with the same options
-        $prCommand = new UpstreamPrCommand();
-        // Transfer options to PR command
-        $options = [
-            'dry-run' => $this->option('dry-run'),
-            'test' => false, // Already tested above
-            'no-pre' => $this->option('no-pre'),
-            'no-post' => $this->option('no-post'),
-            'strategy' => $this->option('strategy'),
-            'upstream' => $this->option('upstream'),
-            'branch' => $this->option('branch'),
-            'local' => $this->option('local'),
-            'remote-name' => $this->option('remote-name'),
-            'pr-branch' => $this->option('pr-branch'),
-            'pr-title' => $this->option('pr-title'),
-            'pr-body' => $this->option('pr-body'),
-        ];
-        // Set options on the PR command
-        foreach ($options as $key => $value) {
-            if ($value !== null) {
-                $prCommand->setOption($key, $value);
-            }
+        // Build command arguments
+        $arguments = [];
+        if ($this->option('dry-run')) {
+            $arguments['--dry-run'] = true;
+        }
+        if ($this->option('no-pre')) {
+            $arguments['--no-pre'] = true;
+        }
+        if ($this->option('no-post')) {
+            $arguments['--no-post'] = true;
+        }
+        if ($this->option('strategy')) {
+            $arguments['--strategy'] = $this->option('strategy');
+        }
+        if ($this->option('upstream')) {
+            $arguments['--upstream'] = $this->option('upstream');
+        }
+        if ($this->option('branch')) {
+            $arguments['--branch'] = $this->option('branch');
+        }
+        if ($this->option('local')) {
+            $arguments['--local'] = $this->option('local');
+        }
+        if ($this->option('remote-name')) {
+            $arguments['--remote-name'] = $this->option('remote-name');
+        }
+        if ($this->option('pr-branch')) {
+            $arguments['--pr-branch'] = $this->option('pr-branch');
+        }
+        if ($this->option('pr-title')) {
+            $arguments['--pr-title'] = $this->option('pr-title');
+        }
+        if ($this->option('pr-body')) {
+            $arguments['--pr-body'] = $this->option('pr-body');
         }
 
-        return $prCommand->handle();
+        // Call the PR command directly
+        return $this->call('laravelplus:pr', $arguments);
     }
 
     private function directUpgrade(): int
     {
         $this->info('🚀 Upgrading with upstream updates...');
-        // Call the sync command with the same options
-        $syncCommand = new UpstreamSyncCommand();
-        // Transfer options to sync command
-        $options = [
-            'dry-run' => $this->option('dry-run'),
-            'test' => false, // Already tested above
-            'no-pre' => $this->option('no-pre'),
-            'no-post' => $this->option('no-post'),
-            'strategy' => $this->option('strategy'),
-            'upstream' => $this->option('upstream'),
-            'branch' => $this->option('branch'),
-            'local' => $this->option('local'),
-            'remote-name' => $this->option('remote-name'),
-        ];
-        // Set options on the sync command
-        foreach ($options as $key => $value) {
-            if ($value !== null) {
-                $syncCommand->setOption($key, $value);
-            }
+        
+        // Build command arguments for sync command
+        $arguments = [];
+        if ($this->option('dry-run')) {
+            $arguments['--dry-run'] = true;
+        }
+        if ($this->option('no-pre')) {
+            $arguments['--no-pre'] = true;
+        }
+        if ($this->option('no-post')) {
+            $arguments['--no-post'] = true;
+        }
+        if ($this->option('strategy')) {
+            $arguments['--strategy'] = $this->option('strategy');
+        }
+        if ($this->option('upstream')) {
+            $arguments['--upstream'] = $this->option('upstream');
+        }
+        if ($this->option('branch')) {
+            $arguments['--branch'] = $this->option('branch');
+        }
+        if ($this->option('local')) {
+            $arguments['--local'] = $this->option('local');
+        }
+        if ($this->option('remote-name')) {
+            $arguments['--remote-name'] = $this->option('remote-name');
         }
 
-        return $syncCommand->handle();
+        // Call the sync command directly
+        return $this->call('laravelplus:sync', $arguments);
     }
 
     private function applyDefaultPreset(array $cfg): array

@@ -91,8 +91,8 @@ final class UpstreamCheckCommand extends Command
 
                 $this->newLine();
                 $this->line('💡 To pull the updates, run:');
-                $this->line('   <info>php artisan upstream:upgrade</info>');
-                $this->line('   <info>php artisan upstream:upgrade --pr</info> (to create a PR)');
+                $this->line('   <info>php artisan laravelplus:update</info> (creates PR by default)');
+                $this->line('   <info>php artisan laravelplus:update --direct</info> (to apply directly)');
 
                 return self::SUCCESS;
             }

@@ -7,4 +7,3 @@ parameters:
     reportUnmatchedIgnoredErrors: true
     parallel:
         processTimeout: 300.0
-    memoryLimitFile: 1G
