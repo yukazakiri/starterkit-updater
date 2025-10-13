@@ -7,10 +7,20 @@
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.0%2B-red.svg?style=flat-square)](https://laravel.com)
 [![GitHub Stars](https://img.shields.io/github/stars/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 [![GitHub Issues](https://img.shields.io/github/issues/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater/issues)
-[![Tests](https://img.shields.io/badge/tests-97%20test%20cases-green.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
+[![Tests](https://img.shields.io/badge/tests-113%20test%20cases-green.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 [![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 
-A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. Perfect for keeping your Laravel starter kit projects up to date!
+A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package is exclusively designed for Laravel 12** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
+
+## ⚠️ Laravel 12 Exclusive
+
+> **Important**: This package is **exclusively designed for Laravel 12** and will not work with older Laravel versions. It leverages Laravel 12's modern architecture and features to provide the best possible experience.
+
+### Why Laravel 12 Only?
+- **Modern Architecture** - Built for Laravel 12's streamlined structure
+- **Enhanced Security** - Leverages Laravel 12's improved security features
+- **Better Performance** - Optimized for Laravel 12's performance improvements
+- **Future-Proof** - Designed to grow with Laravel's evolution
 
 ## 🚀 LaravelPlus Community
 
@@ -30,7 +40,7 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - **Safe Operations** - Dry-run mode and comprehensive error handling
 
 ### 🧪 **Testing & Quality**
-- **Comprehensive Test Suite** - 97 test cases covering all functionality
+- **Comprehensive Test Suite** - 113 test cases covering all functionality
 - **Built-in Testing** - Validate configuration and connectivity before syncing
 - **Code Quality Tools** - PHPStan, Rector, and Laravel Pint integration
 - **Modern Testing** - Pest PHP with Laravel Testbench
@@ -42,8 +52,9 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - **Easy Setup** - Interactive setup command with beautiful prompts
 
 ### 🔀 **Advanced Workflows**
-- **Pull Request Workflow** - Create PRs instead of direct merges for safer updates
+- **PR-First Workflow** - **Creates PRs by default** for safer updates (Laravel 12 exclusive)
 - **GitHub Integration** - Automatic PR creation with GitHub API
+- **Direct Application** - Optional direct merge with `--direct` flag when needed
 - **Pre/Post Hooks** - Run custom commands before and after sync
 - **Flexible Configuration** - Environment variables and command-line overrides
 
@@ -61,6 +72,8 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - **Logging & Debugging** - Comprehensive logging for troubleshooting
 
 ## Installation
+
+> **⚠️ Laravel 12 Only**: This package is exclusively designed for Laravel 12. It will not work with older Laravel versions.
 
 ```bash
 composer require laravelplus/laravel-updater
@@ -151,17 +164,17 @@ GIT_BINARY=git
 
 ### Recommended Workflow
 
-The recommended workflow is to check for updates first, then upgrade:
+The recommended workflow is to check for updates first, then upgrade. **The package creates PRs by default for safer updates:**
 
 ```bash
 # 1. Check if updates are available
 php artisan laravelplus:check
 
-# 2. If updates are available, upgrade your project
+# 2. If updates are available, upgrade your project (creates PR by default)
 php artisan laravelplus:update
 
-# 3. Or create a pull request for safer updates
-php artisan laravelplus:update --pr
+# 3. For direct application (bypasses PR creation)
+php artisan laravelplus:update --direct
 ```
 
 ### Quick Start Examples
@@ -241,7 +254,7 @@ php artisan laravelplus:update
 
 ## Pull Request Workflow
 
-For safer updates in production environments, you can create pull requests instead of direct merges:
+**This package creates pull requests by default** for safer updates in production environments. This is a Laravel 12 exclusive feature that ensures all upstream changes go through proper review:
 
 ### Setup GitHub Integration
 
@@ -263,8 +276,8 @@ GITHUB_REPO=your_repo_name
 # Check for updates first
 php artisan laravelplus:check
 
-# Create a PR with upstream updates
-php artisan laravelplus:update --pr
+# Create a PR with upstream updates (default behavior)
+php artisan laravelplus:update
 
 # Or use the direct PR command
 php artisan laravelplus:pr --test
@@ -274,6 +287,9 @@ php artisan laravelplus:pr --pr-branch=update-vue-starter-kit
 
 # Create PR with custom title and body
 php artisan laravelplus:pr --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
+
+# For direct application (bypasses PR creation)
+php artisan laravelplus:update --direct
 ```
 
 ### PR Workflow Benefits
@@ -416,10 +432,10 @@ https://username:token@github.com/user/repo.git
 Check if there are updates available from upstream repository.
 
 ### `laravelplus:update`
-Upgrade your project with the latest changes from upstream (recommended).
+Upgrade your project with the latest changes from upstream. **Creates PRs by default** (recommended and safest).
 
-### `laravelplus:update --pr`
-Create a pull request with upstream updates (safer for production).
+### `laravelplus:update --direct`
+Apply changes directly without creating a pull request (use with caution).
 
 ### `laravelplus:sync`
 Direct sync with upstream repository (merges directly to your branch).
@@ -434,6 +450,7 @@ Interactive setup wizard for configuring the package.
 
 | Option | Description |
 |--------|-------------|
+| `--direct` | Apply changes directly without creating a pull request |
 | `--dry-run` | Show what would happen without executing |
 | `--test` | Test configuration and connectivity before sync |
 | `--no-pre` | Skip pre_update hooks |
@@ -449,7 +466,7 @@ Interactive setup wizard for configuring the package.
 
 ## 🧪 Testing
 
-This package includes a comprehensive test suite with **97 test cases** covering all functionality:
+This package includes a comprehensive test suite with **113 test cases** covering all functionality:
 
 ### Test Coverage
 - **Unit Tests** - Core components, services, and utilities
@@ -521,9 +538,10 @@ We welcome contributions! Please see our [Development Guide](DEVELOPMENT.md) for
 ## Requirements
 
 - **PHP 8.4+** - Latest PHP features and performance
-- **Laravel 12.0+** - Latest Laravel framework
+- **Laravel 12.0+** - **Exclusively designed for Laravel 12** (will not work with older versions)
 - **Git** - Installed and accessible in PATH
 - **Valid Git Repository** - Working directory must be a Git repository
+- **GitHub Token** - Required for PR creation (optional for direct sync)
 
 ## License
 
@@ -531,8 +549,9 @@ This package is open-sourced software licensed under the [MIT license](https://o
 
 ## 📊 Package Statistics
 
-- **97 Test Cases** - Comprehensive test coverage
-- **Modern Architecture** - PHP 8.4 + Laravel 12
+- **113 Test Cases** - Comprehensive test coverage
+- **Modern Architecture** - PHP 8.4 + Laravel 12 exclusive
+- **PR-First Workflow** - Creates PRs by default for safer updates
 - **Code Quality** - PHPStan Level 8 + Rector + Pint
 - **Zero Dependencies** - Only Laravel framework dependencies
 - **Universal Support** - Works with any Git hosting service
