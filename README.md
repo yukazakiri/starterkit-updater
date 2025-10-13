@@ -10,7 +10,11 @@
 [![Tests](https://img.shields.io/badge/tests-113%20test%20cases-green.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 [![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 
+![LaravelPlus Updater](https://media.licdn.com/dms/image/v2/D4D22AQEf0h14zDCZLw/feedshare-shrink_2048_1536/B4DZndAyFcIgAw-/0/1760349594445?e=1762992000&v=beta&t=6NzS0L2iOHCYTTEhsXzot5ipOtkZvQC8DHYVY5x2OUE)
+
+
 A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package is exclusively designed for Laravel 12** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
+
 
 ## 🚀 Simple 3-Step Workflow
 
