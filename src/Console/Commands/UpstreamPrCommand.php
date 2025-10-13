@@ -107,9 +107,26 @@ final class UpstreamPrCommand extends Command
         };
 
         $this->info('🚀 Creating pull request for upstream sync...');
+        
+        // Show repository information
+        $this->showRepositoryInfo($git, $upstreamUrl);
+        
         $this->line("📝 PR Branch: <info>$prBranch</info>");
         $this->line("🎯 Target Branch: <info>$localBranch</info>");
         $this->line("📋 PR Title: <info>$prTitle</info>");
+        
+        if ($dry) {
+            $this->newLine();
+            $this->line('🔍 <comment>What will happen:</comment>');
+            $this->line('   1. 📡 Ensure upstream remote is configured');
+            $this->line('   2. 📥 Fetch latest changes from upstream');
+            $this->line('   3. 🌿 Create new PR branch from current branch');
+            $this->line('   4. 🔀 Merge upstream changes into PR branch');
+            $this->line('   5. 📤 Push PR branch to origin');
+            $this->line('   6. 🎯 Create GitHub pull request');
+            $this->newLine();
+        }
+        
         $this->newLine();
 
         // Ensure remote exists
@@ -165,7 +182,13 @@ final class UpstreamPrCommand extends Command
             $this->createGitHubPr($cfg, $prBranch, $localBranch, $prTitle, $prBody, $upstreamUrl);
         }
 
-        $this->info($dry ? 'Dry run complete.' : 'Pull request created successfully!');
+        if ($dry) {
+            $this->newLine();
+            $this->info('✅ Dry run complete - no changes were made.');
+            $this->line('💡 Run without <comment>--dry-run</comment> to execute the pull request creation.');
+        } else {
+            $this->info('✅ Pull request created successfully!');
+        }
 
         return self::SUCCESS;
     }
@@ -177,6 +200,25 @@ final class UpstreamPrCommand extends Command
         $this->line('<fg=blue>   🚀 Laravel Updater - Keep your projects up to date!        </>');
         $this->line('<fg=blue>   ═══════════════════════════════════════════════════════════ </>');
         $this->line('');
+    }
+
+    private function showRepositoryInfo(VersionControl $git, string $upstreamUrl): void
+    {
+        try {
+            // Get local repository URL
+            $localUrl = $git->run(['remote', 'get-url', 'origin'], throw: false);
+            if (!$localUrl) {
+                $localUrl = 'Local repository (no origin remote)';
+            }
+            
+            $this->line('🏠 <comment>Repository Information:</comment>');
+            $this->line("   Local: <info>$localUrl</info>");
+            $this->line("   Upstream: <info>$upstreamUrl</info>");
+            $this->newLine();
+            
+        } catch (Throwable) {
+            // If we can't get repository info, just continue silently
+        }
     }
 
     private function generatePrBranchName(array $cfg): string
