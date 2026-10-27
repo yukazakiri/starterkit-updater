@@ -25,29 +25,13 @@ A maintained fork of [LaravelPlus Updater](https://github.com/LaravelPlus/larave
 
 ## Installation
 
-Until the fork is submitted to Packagist, add its GitHub repository to your project's `composer.json`:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/yukazakiri/starterkit-updater"
-        }
-    ],
-    "require": {
-        "yukazakiri/starterkit-updater": "dev-master"
-    }
-}
-```
-
-Then install it:
+Install the package from [Packagist](https://packagist.org/packages/yukazakiri/starterkit-updater):
 
 ```bash
-composer update yukazakiri/starterkit-updater
+composer require yukazakiri/starterkit-updater:dev-master
 ```
 
-After the fork is submitted to Packagist, the VCS repository entry is no longer needed. Install the development branch with `composer require yukazakiri/starterkit-updater:dev-master`, or use `composer require yukazakiri/starterkit-updater` after a stable release has been tagged and indexed. To switch from the upstream package, remove `laravelplus/laravel-updater` before installing the fork.
+The development branch is currently the only published version. After a stable release is tagged and indexed, you can install it with `composer require yukazakiri/starterkit-updater`. To switch from the upstream package, remove `laravelplus/laravel-updater` before installing the fork.
 
 Laravel package discovery registers the service provider automatically. If package discovery is disabled in your application, register `LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider` manually.
 
@@ -324,13 +308,9 @@ composer test
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for the project structure, architecture notes, and contribution workflow.
 
-### Publishing the Fork
+### Publishing Releases
 
-The package is prepared for submission under `yukazakiri/starterkit-updater`. To publish it:
-
-1. Sign in to [Packagist](https://packagist.org/) and submit `https://github.com/yukazakiri/starterkit-updater`.
-2. Configure the Packagist GitHub integration so new commits and tags are indexed automatically.
-3. Create and push a release tag pointing to a commit that contains the fork's Composer name. Once Packagist indexes the tag, Composer can install it as a stable release.
+The package is published on [Packagist](https://packagist.org/packages/yukazakiri/starterkit-updater). To publish a stable release, create and push a release tag pointing to a commit that contains the fork's Composer name. Once Packagist indexes the tag, Composer can install that version as a stable release. Configure the Packagist GitHub integration to keep new commits and tags indexed automatically.
 
 Choose the release version deliberately and push that tag explicitly. The local `v1.0.x` tags inherited from the starter kit are unrelated to this package and should not be pushed as package releases.
 
@@ -338,7 +318,7 @@ Choose the release version deliberately and push that tag explicitly. The local 
 
 ### Composer cannot find the fork
 
-Before Packagist submission, make sure the GitHub VCS repository is declared in `composer.json` and require `yukazakiri/starterkit-updater:dev-master` explicitly. After submission, allow time for Packagist to index the desired branch or release tag.
+Require `yukazakiri/starterkit-updater:dev-master` while no stable release is available. If a new branch or tag is missing, allow time for Packagist to index it.
 
 ### "Already up to date" when changes are expected
 
