@@ -1,15 +1,26 @@
 {
-    "name": "laravelplus/laravel-updater",
-    "description": "A Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.)",
+    "name": "yukazakiri/starterkit-updater",
+    "description": "Sync Laravel starter-kit projects with their upstream repositories",
+    "homepage": "https://github.com/yukazakiri/starterkit-updater",
     "keywords": ["laravel", "upstream", "sync", "git", "github", "gitlab", "bitbucket"],
     "license": "MIT",
     "type": "library",
     "authors": [
         {
             "name": "Nejc Cotic",
-            "email": "nejc.cotic@gmail.com"
+            "email": "nejc.cotic@gmail.com",
+            "role": "Original author"
+        },
+        {
+            "name": "yukazakiri",
+            "homepage": "https://github.com/yukazakiri",
+            "role": "Maintainer"
         }
     ],
+    "support": {
+        "issues": "https://github.com/yukazakiri/starterkit-updater/issues",
+        "source": "https://github.com/yukazakiri/starterkit-updater"
+    },
     "require": {
         "php": "^8.4",
         "illuminate/console": "^12.0|^13.0",

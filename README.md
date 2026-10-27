@@ -11,7 +11,7 @@ A maintained fork of [LaravelPlus Updater](https://github.com/LaravelPlus/larave
 
 **Supports Laravel 12 and 13 on PHP 8.4+.**
 
-> The Composer package name (`laravelplus/laravel-updater`), PHP namespace (`LaravelPlus\LaravelUpdater`), and Artisan command prefix (`laravelplus:`) are unchanged, so this fork works as a drop-in replacement for the upstream package.
+> The fork uses the Composer package name `yukazakiri/starterkit-updater`. Its PHP namespace (`LaravelPlus\LaravelUpdater`) and Artisan command prefix (`laravelplus:`) remain compatible with the upstream package. Install only one of the two packages in a project.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ A maintained fork of [LaravelPlus Updater](https://github.com/LaravelPlus/larave
 
 ## Installation
 
-This fork is distributed from GitHub, not Packagist. Add it as a VCS repository in your project's `composer.json`:
+Until the fork is submitted to Packagist, add its GitHub repository to your project's `composer.json`:
 
 ```json
 {
@@ -35,7 +35,7 @@ This fork is distributed from GitHub, not Packagist. Add it as a VCS repository 
         }
     ],
     "require": {
-        "laravelplus/laravel-updater": "dev-master"
+        "yukazakiri/starterkit-updater": "dev-master"
     }
 }
 ```
@@ -43,10 +43,10 @@ This fork is distributed from GitHub, not Packagist. Add it as a VCS repository 
 Then install it:
 
 ```bash
-composer update laravelplus/laravel-updater
+composer update yukazakiri/starterkit-updater
 ```
 
-To install the upstream package instead, use `composer require laravelplus/laravel-updater`.
+After the fork is submitted to Packagist, the VCS repository entry is no longer needed. Install the development branch with `composer require yukazakiri/starterkit-updater:dev-master`, or use `composer require yukazakiri/starterkit-updater` after a stable release has been tagged and indexed. To switch from the upstream package, remove `laravelplus/laravel-updater` before installing the fork.
 
 Laravel package discovery registers the service provider automatically. If package discovery is disabled in your application, register `LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider` manually.
 
@@ -320,9 +320,9 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for the project structure, architecture not
 
 ## Troubleshooting
 
-### Composer installs the upstream package instead of this fork
+### Composer cannot find the fork
 
-Make sure the VCS repository is declared in `composer.json` and require `dev-master` explicitly. Then run `composer update laravelplus/laravel-updater`.
+Before Packagist submission, make sure the GitHub VCS repository is declared in `composer.json` and require `yukazakiri/starterkit-updater:dev-master` explicitly. After submission, allow time for Packagist to index the desired branch or release tag.
 
 ### "Already up to date" when changes are expected
 

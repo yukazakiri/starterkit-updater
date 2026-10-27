@@ -43,10 +43,18 @@ final class UpstreamUpgradeCommand extends AbstractUpstreamCommand
 
         $git = $this->makeGit($cfg);
 
-        if (! $this->option('dry-run') && ! $this->hasUpdates($cfg, $git)) {
-            $this->info('✅ You are already up to date! No updates to apply.');
+        if (! $this->option('dry-run')) {
+            $hasUpdates = $this->hasUpdates($cfg, $git);
 
-            return self::SUCCESS;
+            if ($hasUpdates === null) {
+                return self::FAILURE;
+            }
+
+            if (! $hasUpdates) {
+                $this->info('✅ You are already up to date! No updates to apply.');
+
+                return self::SUCCESS;
+            }
         }
 
         return $this->option('direct')
@@ -68,7 +76,7 @@ final class UpstreamUpgradeCommand extends AbstractUpstreamCommand
     /**
      * @param  array<string, mixed>  $cfg
      */
-    private function hasUpdates(array $cfg, VersionControl $git): bool
+    private function hasUpdates(array $cfg, VersionControl $git): ?bool
     {
         $remoteName = $this->remoteName();
         $upstreamUrl = $this->upstreamUrl($cfg);
@@ -85,14 +93,13 @@ final class UpstreamUpgradeCommand extends AbstractUpstreamCommand
                 'rev-list',
                 '--count',
                 "$localBranch..$remoteName/$upstreamBranch",
-            ], throw: false);
+            ]);
 
             return (int) mb_trim($count) > 0;
         } catch (Throwable $e) {
-            $this->warn("⚠️  Could not check for updates: {$e->getMessage()}");
+            $this->error("❌ Could not check for updates: {$e->getMessage()}");
 
-            // Assume there is something to do rather than silently skipping an update.
-            return true;
+            return null;
         }
     }
 
@@ -301,13 +308,13 @@ final class UpstreamUpgradeCommand extends AbstractUpstreamCommand
             $abortCommand = $strategy === 'rebase' ? ['rebase', '--abort'] : ['merge', '--abort'];
 
             try {
-                $git->run($abortCommand, throw: false);
+                $git->run($abortCommand);
                 $this->line('↩️  Aborted the failed '.$strategy.'; your branch is unchanged.');
             } catch (Throwable) {
-                $this->warn('⚠️  Could not abort automatically. Resolve or abort the operation manually.');
+                $this->warn('⚠️  Could not abort automatically. Check the repository state and resolve or abort any operation manually.');
             }
 
-            $this->line('💡 Resolve the conflicts locally, commit the result, and run the command again.');
+            $this->line('💡 Check the error above before trying the update again.');
 
             return false;
         }

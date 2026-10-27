@@ -59,6 +59,20 @@ it('rejects an invalid strategy', function () {
         ->assertExitCode(1);
 });
 
+it('fails when an update comparison references a missing branch', function (string $option) {
+    $upstream = TestRepository::create();
+    $upstream->write('README.md', 'base');
+    $upstream->commit();
+
+    $local = TestRepository::cloneFrom($upstream);
+    updaterConfigureRepositories($local, $upstream);
+
+    $this->artisan("laravelplus:update $option=missing")
+        ->expectsOutputToContain('Could not check for updates')
+        ->doesntExpectOutputToContain('already up to date')
+        ->assertExitCode(1);
+})->with(['--local', '--branch']);
+
 it('applies updates directly with the direct option', function () {
     $upstream = TestRepository::create();
     $upstream->write('README.md', 'version 1');
@@ -103,6 +117,23 @@ it('aborts on merge conflicts without committing conflict markers', function () 
         ->and($contents)->not->toContain('<<<<<<<')
         ->and($local->git(['status', '--porcelain']))->toBe('')
         ->and($local->git(['rev-parse', '--abbrev-ref', 'HEAD']))->toBe('main');
+});
+
+it('reports when a failed merge cannot be aborted', function () {
+    $upstream = TestRepository::create();
+    $upstream->write('upstream.txt', 'upstream');
+    $upstream->commit();
+
+    $local = TestRepository::create();
+    $local->write('local.txt', 'local');
+    $local->commit();
+    updaterConfigureRepositories($local, $upstream, ['upstream.allow_unrelated_histories' => false]);
+
+    $this->artisan('laravelplus:update --direct')
+        ->expectsOutputToContain('merge failed')
+        ->expectsOutputToContain('Could not abort automatically')
+        ->doesntExpectOutputToContain('Aborted the failed merge')
+        ->assertExitCode(1);
 });
 
 it('skips post_update hooks in PR mode and returns to the original branch', function () {

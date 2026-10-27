@@ -2,7 +2,7 @@
 
 This is the development guide for the [yukazakiri/starterkit-updater](https://github.com/yukazakiri/starterkit-updater) fork. The package follows modern PHP 8.4 practices with strict typing, explicit contracts, and a Pest test suite.
 
-> The Composer package name (`laravelplus/laravel-updater`), PHP namespace, and `laravelplus:*` Artisan commands are kept for compatibility with the upstream package.
+> The fork's Composer package name is `yukazakiri/starterkit-updater`. The PHP namespace and `laravelplus:*` Artisan commands remain unchanged from upstream.
 
 ## Getting Started
 
