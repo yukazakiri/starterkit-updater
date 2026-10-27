@@ -8,11 +8,9 @@
 [![GitHub Stars](https://img.shields.io/github/stars/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater)
 [![GitHub Issues](https://img.shields.io/github/issues/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater/issues)
 [![Tests](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml/badge.svg)](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml)
-[![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
-
+[![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater)
 
 A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package supports Laravel 12 and 13** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
-
 
 ## 🚀 Simple 3-Step Workflow
 
