@@ -4,95 +4,57 @@ declare(strict_types=1);
 
 use LaravelPlus\LaravelUpdater\Exceptions\UpstreamException;
 
-it('can create configuration missing exception', function () {
-    $exception = UpstreamException::configurationMissing('upstream_url');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
+it('creates a missing configuration exception', function () {
+    expect(UpstreamException::configurationMissing('upstream_url'))
         ->getMessage()
-        ->toBe("Upstream configuration key 'upstream_url' is missing or empty.");
+        ->toBe("Required configuration key 'upstream_url' is missing or empty.");
 });
 
-it('can create invalid strategy exception', function () {
-    $exception = UpstreamException::invalidStrategy('invalid');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
+it('creates an invalid strategy exception', function () {
+    expect(UpstreamException::invalidStrategy('invalid'))
         ->getMessage()
         ->toBe("Invalid strategy 'invalid'. Must be 'merge' or 'rebase'.");
 });
 
-it('can create git command failed exception', function () {
-    $exception = UpstreamException::gitCommandFailed('Failed to fetch');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe('Git command failed: Failed to fetch');
-});
-
-it('can create git command failed exception with previous exception', function () {
+it('creates a git command failure exception', function () {
     $previous = new RuntimeException('Original error');
-    $exception = UpstreamException::gitCommandFailed('Failed to fetch', $previous);
+    $exception = UpstreamException::gitCommandFailed('fetch upstream', 'denied', $previous);
 
     expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe('Git command failed: Failed to fetch')
-        ->getPrevious()
-        ->toBe($previous);
+        ->getMessage()->toBe('Git command failed: fetch upstream (denied)')
+        ->getPrevious()->toBe($previous);
 });
 
-it('can create remote not found exception', function () {
-    $exception = UpstreamException::remoteNotFound('upstream');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe("Git remote 'upstream' not found.");
+it('creates a remote not found exception', function () {
+    expect(UpstreamException::remoteNotFound('upstream'))
+        ->getMessage()->toBe("Git remote 'upstream' not found.");
 });
 
-it('can create branch not found exception', function () {
-    $exception = UpstreamException::branchNotFound('main');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe("Git branch 'main' not found.");
+it('creates a branch not found exception', function () {
+    expect(UpstreamException::branchNotFound('main'))
+        ->getMessage()->toBe("Git branch 'main' not found.");
 });
 
-it('can create working directory not writable exception', function () {
-    $exception = UpstreamException::workingDirectoryNotWritable('/tmp');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe("Working directory '/tmp' is not writable.");
+it('creates a working directory exception', function () {
+    expect(UpstreamException::workingDirectoryNotWritable('/tmp'))
+        ->getMessage()->toBe("Working directory '/tmp' is not writable.");
 });
 
-it('can create hook failed exception', function () {
-    $exception = UpstreamException::hookFailed('npm install');
-
-    expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe('Pre/post update hook failed: npm install');
+it('creates a not-a-git-repository exception', function () {
+    expect(UpstreamException::notAGitRepository('/tmp'))
+        ->getMessage()->toBe("Directory '/tmp' is not a git repository.");
 });
 
-it('can create hook failed exception with previous exception', function () {
+it('creates a hook failure exception with the previous exception', function () {
     $previous = new RuntimeException('Command failed');
     $exception = UpstreamException::hookFailed('npm install', $previous);
 
     expect($exception)
-        ->toBeInstanceOf(UpstreamException::class)
-        ->getMessage()
-        ->toBe('Pre/post update hook failed: npm install')
-        ->getPrevious()
-        ->toBe($previous);
+        ->getMessage()->toBe('Pre/post update hook failed: npm install')
+        ->getPrevious()->toBe($previous);
 });
 
 it('extends RuntimeException', function () {
-    $exception = UpstreamException::configurationMissing('test');
-
-    expect($exception)->toBeInstanceOf(RuntimeException::class);
+    expect(UpstreamException::configurationMissing('test'))
+        ->toBeInstanceOf(RuntimeException::class);
 });

@@ -31,7 +31,17 @@ final readonly class VersionControl implements VersionControlInterface
         $process->run();
 
         if ($throw && ! $process->isSuccessful()) {
-            throw new RuntimeException(in_array($process->getErrorOutput(), ['', '0'], true) ? $process->getOutput() : $process->getErrorOutput());
+            $error = mb_trim($process->getErrorOutput());
+
+            if ($error === '') {
+                $error = mb_trim($process->getOutput());
+            }
+
+            if ($error === '') {
+                $error = 'Command failed: '.implode(' ', $cmd);
+            }
+
+            throw new RuntimeException($error);
         }
 
         return mb_trim($process->getOutput().$process->getErrorOutput());
@@ -47,7 +57,7 @@ final readonly class VersionControl implements VersionControlInterface
     {
         $out = $this->run(['remote'], throw: false);
 
-        return collect(preg_split('/\R/', $out))->filter()->contains($name);
+        return collect(preg_split('/\R/', $out) ?: [])->filter()->contains($name);
     }
 
     /**

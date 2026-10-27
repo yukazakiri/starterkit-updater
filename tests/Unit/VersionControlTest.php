@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use LaravelPlus\LaravelUpdater\Support\VersionControl;
+use LaravelPlus\LaravelUpdater\Tests\Support\TestRepository;
 
 it('can be instantiated', function () {
     $versionControl = new VersionControl('git', '/tmp');
@@ -10,103 +11,50 @@ it('can be instantiated', function () {
     expect($versionControl)->toBeInstanceOf(VersionControl::class);
 });
 
-it('returns correct git binary', function () {
+it('returns the configured git binary and working directory', function () {
     $versionControl = new VersionControl('git', '/tmp');
 
-    expect($versionControl->getGitBinary())->toBe('git');
+    expect($versionControl->getGitBinary())->toBe('git')
+        ->and($versionControl->getWorkingDirectory())->toBe('/tmp');
 });
 
-it('returns correct working directory', function () {
-    $versionControl = new VersionControl('git', '/tmp');
+it('runs a real git command', function () {
+    $repository = TestRepository::create();
+    $versionControl = new VersionControl('git', $repository->path);
 
-    expect($versionControl->getWorkingDirectory())->toBe('/tmp');
+    expect($versionControl->run(['--version']))->toContain('git version');
 });
 
-it('can check if remote exists', function () {
-    $versionControl = new VersionControl('git', '/tmp');
+it('detects an existing remote', function () {
+    $repository = TestRepository::create();
+    $repository->git(['remote', 'add', 'origin', 'https://github.com/test/repo.git']);
 
-    // Mock the run method to return a list of remotes
-    $versionControl = Mockery::mock(VersionControl::class, ['git', '/tmp'])
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods();
+    $versionControl = new VersionControl('git', $repository->path);
 
-    $versionControl->shouldReceive('run')
-        ->with(['remote'], false)
-        ->once()
-        ->andReturn("origin\nupstream");
-
-    $result = $versionControl->hasRemote('upstream');
-
-    expect($result)->toBeTrue();
+    expect($versionControl->hasRemote('origin'))->toBeTrue()
+        ->and($versionControl->hasRemote('upstream'))->toBeFalse();
 });
 
-it('returns false when remote does not exist', function () {
-    $versionControl = new VersionControl('git', '/tmp');
+it('throws when a git command fails', function () {
+    $repository = TestRepository::create();
+    $versionControl = new VersionControl('git', $repository->path);
 
-    // Mock the run method to return a list of remotes
-    $versionControl = Mockery::mock(VersionControl::class, ['git', '/tmp'])
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods();
-
-    $versionControl->shouldReceive('run')
-        ->with(['remote'], false)
-        ->once()
-        ->andReturn('origin');
-
-    $result = $versionControl->hasRemote('upstream');
-
-    expect($result)->toBeFalse();
+    expect(fn () => $versionControl->run(['not-a-real-git-command']))
+        ->toThrow(RuntimeException::class);
 });
 
-it('throws exception when git command fails and throw is true', function () {
-    $versionControl = new VersionControl('git', '/tmp');
+it('does not throw when a failed command is allowed to fail', function () {
+    $repository = TestRepository::create();
+    $versionControl = new VersionControl('git', $repository->path);
 
-    // Mock the run method to simulate a failed command
-    $versionControl = Mockery::mock(VersionControl::class, ['git', '/tmp'])
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods();
+    $output = $versionControl->run(['not-a-real-git-command'], throw: false);
 
-    $versionControl->shouldReceive('run')
-        ->with(['invalid-command'])
-        ->once()
-        ->andThrow(new RuntimeException('fatal: invalid command'));
-
-    expect(fn () => $versionControl->run(['invalid-command']))
-        ->toThrow(RuntimeException::class, 'fatal: invalid command');
+    expect($output)->not->toBe('');
 });
 
-it('does not throw exception when git command fails and throw is false', function () {
-    $versionControl = new VersionControl('git', '/tmp');
+it('trims command output', function () {
+    $repository = TestRepository::create();
+    $versionControl = new VersionControl('git', $repository->path);
 
-    // Mock the run method to simulate a failed command
-    $versionControl = Mockery::mock(VersionControl::class, ['git', '/tmp'])
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods();
-
-    $versionControl->shouldReceive('run')
-        ->with(['invalid-command'], false)
-        ->once()
-        ->andReturn('error output');
-
-    $result = $versionControl->run(['invalid-command'], false);
-
-    expect($result)->toBe('error output');
-});
-
-it('returns trimmed output from successful command', function () {
-    $versionControl = new VersionControl('git', '/tmp');
-
-    // Mock the run method to return output with whitespace
-    $versionControl = Mockery::mock(VersionControl::class, ['git', '/tmp'])
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods();
-
-    $versionControl->shouldReceive('run')
-        ->with(['status'])
-        ->once()
-        ->andReturn("  On branch main  \n  nothing to commit  ");
-
-    $result = $versionControl->run(['status']);
-
-    expect($result)->toBe("On branch main\nnothing to commit");
+    expect($versionControl->run(['config', 'user.name']))->toBe('Updater Tests');
 });

@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace LaravelPlus\LaravelUpdater\Console\Commands;
 
-use Exception;
 use Illuminate\Console\Command;
 use LaravelPlus\LaravelUpdater\Contracts\UpstreamCommandInterface;
 use LaravelPlus\LaravelUpdater\Contracts\VersionControlInterface;
 use LaravelPlus\LaravelUpdater\Support\VersionControl;
+use RuntimeException;
+use Symfony\Component\Process\Process;
+use Throwable;
 
 abstract class AbstractUpstreamCommand extends Command implements UpstreamCommandInterface
 {
+    protected const DEFAULT_UPSTREAM_URL = 'https://github.com/laravel/vue-starter-kit.git';
+
     protected readonly VersionControlInterface $versionControl;
 
     public function __construct()
@@ -26,38 +30,50 @@ abstract class AbstractUpstreamCommand extends Command implements UpstreamComman
     }
 
     /**
-     * Apply default preset configuration if none is set.
+     * Apply the configured default preset to the configuration.
+     *
+     * A preset is only allowed to override the upstream URL when the user has
+     * not configured a custom one, but its hooks are always merged in so that
+     * the preset's install/build steps are actually executed.
      *
      * @param  array<string, mixed>  $config  The configuration array
      * @return array<string, mixed> The updated configuration
      */
     final public function applyDefaultPreset(array $config): array
     {
-        // Check if we already have a specific upstream URL configured
-        if (! empty($config['upstream_url']) && $config['upstream_url'] !== 'https://github.com/laravel/vue-starter-kit.git') {
-            return $config;
-        }
-
-        // Check if we have a default preset configured
         $defaultPreset = $config['default_preset'] ?? null;
-        if (! $defaultPreset || ! isset($config['presets'][$defaultPreset])) {
+
+        if (! is_string($defaultPreset) || ! isset($config['presets'][$defaultPreset])) {
             return $config;
         }
 
-        // Apply the default preset configuration
+        /** @var array<string, mixed> $preset */
         $preset = $config['presets'][$defaultPreset];
 
-        // Merge preset configuration with existing config
-        $config['upstream_url'] = $preset['upstream_url'];
-        $config['upstream_branch'] = $preset['upstream_branch'] ?? $config['upstream_branch'];
+        $configuredUrl = (string) ($config['upstream_url'] ?? '');
+        $presetUrl = (string) ($preset['upstream_url'] ?? '');
+        $hasCustomUrl = $configuredUrl !== '' && $configuredUrl !== self::DEFAULT_UPSTREAM_URL;
 
-        // Merge hooks if they exist in the preset
-        if (isset($preset['post_update'])) {
-            $config['post_update'] = array_merge($config['post_update'], $preset['post_update']);
+        // A preset only applies when the user has not selected a different
+        // upstream repository.
+        if ($hasCustomUrl && $configuredUrl !== $presetUrl) {
+            return $config;
         }
 
-        if (isset($preset['pre_update'])) {
-            $config['pre_update'] = array_merge($config['pre_update'], $preset['pre_update']);
+        $config['upstream_url'] = $presetUrl;
+        $config['upstream_branch'] = $preset['upstream_branch'] ?? $config['upstream_branch'] ?? 'main';
+
+        foreach (['pre_update', 'post_update'] as $hookKey) {
+            if (! isset($preset[$hookKey]) || ! is_array($preset[$hookKey])) {
+                continue;
+            }
+
+            $existing = isset($config[$hookKey]) && is_array($config[$hookKey]) ? $config[$hookKey] : [];
+
+            $config[$hookKey] = array_values(array_unique([
+                ...$existing,
+                ...$preset[$hookKey],
+            ]));
         }
 
         return $config;
@@ -75,7 +91,7 @@ abstract class AbstractUpstreamCommand extends Command implements UpstreamComman
         $this->newLine();
 
         $tests = [
-            'Git Binary' => fn (): bool => $this->testGitBinary(),
+            'Git Binary' => $this->testGitBinary(...),
             'Working Directory' => fn (): bool => $this->testWorkingDirectory($config),
             'Configuration' => fn (): bool => $this->testConfiguration($config),
             'Remote Connectivity' => fn (): bool => $this->testRemoteConnectivity($config),
@@ -94,7 +110,7 @@ abstract class AbstractUpstreamCommand extends Command implements UpstreamComman
                 } else {
                     $this->line("❌ <error>$name</error>");
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $this->line("❌ <error>$name</error> - {$e->getMessage()}");
             }
         }
@@ -118,17 +134,84 @@ abstract class AbstractUpstreamCommand extends Command implements UpstreamComman
     }
 
     /**
+     * Read a command option as a string, ignoring non-string values.
+     */
+    final protected function stringOption(string $name, string $default = ''): string
+    {
+        $value = $this->option($name);
+
+        return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    /**
+     * Read a configuration value as a string, ignoring non-string values.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    final protected function stringConfig(array $config, string $key, string $default = ''): string
+    {
+        $value = $config[$key] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    /**
+     * Execute a list of shell hooks in the configured working directory.
+     *
+     * @param  array<int, string>  $hooks
+     */
+    final protected function execHooks(string $key, array $hooks, bool $dry = false): void
+    {
+        if ($hooks === []) {
+            return;
+        }
+
+        $this->newLine();
+        $this->line("<comment>Running {$key} hooks...</comment>");
+
+        foreach ($hooks as $cmdline) {
+            $this->line("<info>$ {$cmdline}</info>");
+
+            if ($dry) {
+                continue;
+            }
+
+            $process = Process::fromShellCommandline(
+                $cmdline,
+                (string) config('upstream.working_dir', base_path()),
+                null,
+                null,
+                1800
+            );
+
+            $process->setTimeout(1800)->run(function (string $type, string $buffer): void {
+                $this->output->write($buffer);
+            });
+
+            if (! $process->isSuccessful()) {
+                $error = mb_trim($process->getErrorOutput());
+
+                throw new RuntimeException($error !== '' ? $error : "Hook failed: $cmdline");
+            }
+        }
+
+        $this->newLine();
+    }
+
+    /**
      * Test git binary availability.
      */
     private function testGitBinary(): bool
     {
-        $this->versionControl->run(['--version'], throw: false);
+        $output = $this->versionControl->run(['--version'], throw: false);
 
-        return true;
+        return str_contains($output, 'git version');
     }
 
     /**
      * Test working directory.
+     *
+     * @param  array<string, mixed>  $config
      */
     private function testWorkingDirectory(array $config): bool
     {
@@ -139,51 +222,76 @@ abstract class AbstractUpstreamCommand extends Command implements UpstreamComman
 
     /**
      * Test configuration validity.
+     *
+     * @param  array<string, mixed>  $config
      */
     private function testConfiguration(array $config): bool
     {
-        $required = ['upstream_url', 'upstream_branch', 'local_branch', 'strategy'];
-        foreach ($required as $key) {
+        foreach (['upstream_url', 'upstream_branch', 'local_branch', 'strategy'] as $key) {
             if (empty($config[$key])) {
                 return false;
             }
         }
 
-        $validStrategies = ['merge', 'rebase'];
-
-        return in_array($config['strategy'], $validStrategies, true);
+        return in_array(mb_strtolower((string) $config['strategy']), ['merge', 'rebase'], true);
     }
 
     /**
      * Test remote connectivity.
+     *
+     * @param  array<string, mixed>  $config
      */
     private function testRemoteConnectivity(array $config): bool
     {
-        $upstreamUrl = (string) $config['upstream_url'];
-        $this->versionControl->run(['ls-remote', '--heads', $upstreamUrl], throw: false);
+        try {
+            $this->versionControl->run(['ls-remote', '--heads', (string) $config['upstream_url']]);
 
-        return true;
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
      * Test branch validation.
+     *
+     * @param  array<string, mixed>  $config
      */
     private function testBranchValidation(array $config): bool
     {
-        $upstreamUrl = (string) $config['upstream_url'];
-        $upstreamBranch = (string) $config['upstream_branch'];
-        $output = $this->versionControl->run(['ls-remote', '--heads', $upstreamUrl], throw: false);
+        try {
+            $output = $this->versionControl->run([
+                'ls-remote',
+                '--heads',
+                (string) $config['upstream_url'],
+                'refs/heads/'.$config['upstream_branch'],
+            ]);
 
-        return str_contains($output, "refs/heads/$upstreamBranch");
+            return $output !== '';
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
      * Test local repository.
+     *
+     * @param  array<string, mixed>  $config
      */
     private function testLocalRepository(array $config): bool
     {
         $workingDir = (string) ($config['working_dir'] ?? base_path());
 
-        return is_dir("$workingDir/.git");
+        if (! is_dir("$workingDir/.git")) {
+            return false;
+        }
+
+        try {
+            $this->versionControl->run(['rev-parse', '--git-dir']);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

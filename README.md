@@ -4,16 +4,14 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
 [![License](https://img.shields.io/packagist/l/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
 [![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![Laravel Version](https://img.shields.io/badge/Laravel-12.0%2B-red.svg?style=flat-square)](https://laravel.com)
-[![GitHub Stars](https://img.shields.io/github/stars/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
-[![GitHub Issues](https://img.shields.io/github/issues/LaravelPlus/laravel-updater.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater/issues)
-[![Tests](https://img.shields.io/badge/tests-113%20test%20cases-green.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
+[![Laravel Version](https://img.shields.io/badge/Laravel-12.x%20%7C%2013.x-red.svg?style=flat-square)](https://laravel.com)
+[![GitHub Stars](https://img.shields.io/github/stars/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater)
+[![GitHub Issues](https://img.shields.io/github/issues/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater/issues)
+[![Tests](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml/badge.svg)](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml)
 [![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/LaravelPlus/laravel-updater)
 
-![LaravelPlus Updater](https://media.licdn.com/dms/image/v2/D4D22AQEf0h14zDCZLw/feedshare-shrink_2048_1536/B4DZndAyFcIgAw-/0/1760349594445?e=1762992000&v=beta&t=6NzS0L2iOHCYTTEhsXzot5ipOtkZvQC8DHYVY5x2OUE)
 
-
-A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package is exclusively designed for Laravel 12** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
+A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package supports Laravel 12 and 13** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
 
 
 ## 🚀 Simple 3-Step Workflow
@@ -31,15 +29,15 @@ php artisan laravelplus:update
 
 That's it! No complex commands to remember - just 3 simple steps to keep your Laravel starter kit up to date.
 
-## ⚠️ Laravel 12 Exclusive
+## ✅ Supported Laravel Versions
 
-> **Important**: This package is **exclusively designed for Laravel 12** and will not work with older Laravel versions. It leverages Laravel 12's modern architecture and features to provide the best possible experience.
+> **Important**: This package requires **Laravel 12 or 13** and PHP 8.4+. It will not work with older Laravel versions.
 
-### Why Laravel 12 Only?
-- **Modern Architecture** - Built for Laravel 12's streamlined structure
-- **Enhanced Security** - Leverages Laravel 12's improved security features
-- **Better Performance** - Optimized for Laravel 12's performance improvements
-- **Future-Proof** - Designed to grow with Laravel's evolution
+### Why Laravel 12/13?
+- **Modern Architecture** - Built for the streamlined Laravel 11+ application structure
+- **Enhanced Security** - Leverages current Laravel security improvements
+- **Better Performance** - Optimized for current Laravel releases
+- **Future-Proof** - Tested against every supported Laravel release
 
 ## 🚀 LaravelPlus Community
 
@@ -64,7 +62,7 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - **Safe Operations** - Dry-run mode and comprehensive error handling
 
 ### 🧪 **Testing & Quality**
-- **Comprehensive Test Suite** - 113 test cases covering all functionality
+- **Comprehensive Test Suite** - Unit and feature tests covering all functionality
 - **Built-in Testing** - Validate configuration and connectivity before syncing
 - **Code Quality Tools** - PHPStan, Rector, and Laravel Pint integration
 - **Modern Testing** - Pest PHP with Laravel Testbench
@@ -76,7 +74,7 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 - **Easy Setup** - Interactive setup command with beautiful prompts
 
 ### 🔀 **Advanced Workflows**
-- **PR-First Workflow** - **Creates PRs by default** for safer updates (Laravel 12 exclusive)
+- **PR-First Workflow** - **Creates PRs by default** for safer updates
 - **GitHub Integration** - Automatic PR creation with GitHub API
 - **Direct Application** - Optional direct merge with `--direct` flag when needed
 - **Pre/Post Hooks** - Run custom commands before and after sync
@@ -97,7 +95,7 @@ Welcome to the **LaravelPlus** community! We're building tools that make Laravel
 
 ## Installation
 
-> **⚠️ Laravel 12 Only**: This package is exclusively designed for Laravel 12. It will not work with older Laravel versions.
+> **⚠️ Laravel 12/13**: This package requires Laravel 12 or 13 and PHP 8.4+.
 
 ```bash
 composer require laravelplus/laravel-updater
@@ -314,7 +312,7 @@ php artisan laravelplus:update
 
 ## Pull Request Workflow
 
-**This package creates pull requests by default** for safer updates in production environments. This is a Laravel 12 exclusive feature that ensures all upstream changes go through proper review:
+**This package creates pull requests by default** for safer updates in production environments. This ensures all upstream changes go through proper review:
 
 ### Setup GitHub Integration
 
@@ -339,14 +337,14 @@ php artisan laravelplus:check
 # Create a PR with upstream updates (default behavior)
 php artisan laravelplus:update
 
-# Or use the direct PR command
-php artisan laravelplus:pr --test
+# Test the configuration before creating the PR
+php artisan laravelplus:update --test
 
 # Create PR with custom branch name
-php artisan laravelplus:pr --pr-branch=update-vue-starter-kit
+php artisan laravelplus:update --pr-branch=update-vue-starter-kit
 
 # Create PR with custom title and body
-php artisan laravelplus:pr --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
+php artisan laravelplus:update --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
 
 # For direct application (bypasses PR creation)
 php artisan laravelplus:update --direct
@@ -362,46 +360,46 @@ php artisan laravelplus:update --direct
 
 ### Advanced Usage
 
-#### Basic Sync
+#### Apply Changes Directly
 
 ```bash
-php artisan laravelplus:sync
+php artisan laravelplus:update --direct
 ```
 
-#### Test Before Sync
+#### Test Before Updating
 
 ```bash
-php artisan laravelplus:sync --test
+php artisan laravelplus:update --test
 ```
 
 #### Dry Run (See What Would Happen)
 
 ```bash
-php artisan laravelplus:sync --dry-run
+php artisan laravelplus:update --dry-run
 ```
 
 #### Use Rebase Strategy
 
 ```bash
-php artisan laravelplus:sync --strategy=rebase
+php artisan laravelplus:update --strategy=rebase
 ```
 
 #### Override Upstream URL
 
 ```bash
-php artisan laravelplus:sync --upstream=https://github.com/other/repo.git
+php artisan laravelplus:update --upstream=https://github.com/other/repo.git
 ```
 
 #### Skip Hooks
 
 ```bash
-php artisan laravelplus:sync --no-pre --no-post
+php artisan laravelplus:update --no-pre --no-post
 ```
 
 #### Custom Remote Name
 
 ```bash
-php artisan laravelplus:sync --remote-name=upstream
+php artisan laravelplus:update --remote-name=upstream
 ```
 
 ## Supported Laravel Starter Kits
@@ -472,6 +470,8 @@ Configure pre and post-update hooks in your `config/upstream.php`:
 ],
 ```
 
+> **Note:** `post_update` hooks are skipped when creating a pull request, because they would run against unmerged code (for example, migrations). They run with `laravelplus:update --direct`, after the changes have been merged locally. Preset hooks are applied automatically from `config/upstream.php`.
+
 ## Authentication
 
 ### HTTPS
@@ -514,13 +514,14 @@ Apply changes directly without creating a pull request (use with caution).
 | `--branch=` | Override upstream branch |
 | `--local=` | Override local branch |
 | `--remote-name=` | Remote name to use (default: upstream) |
-| `--pr-branch=` | Override PR branch name (laravelplus:pr only) |
-| `--pr-title=` | Override PR title (laravelplus:pr only) |
-| `--pr-body=` | Override PR body (laravelplus:pr only) |
+| `--pr-branch=` | Override PR branch name |
+| `--pr-title=` | Override PR title |
+| `--pr-body=` | Override PR body |
+| `--force-push` | Force push the PR branch with `--force-with-lease` |
 
 ## 🧪 Testing
 
-This package includes a comprehensive test suite with **113 test cases** covering all functionality:
+This package includes a comprehensive test suite covering all functionality:
 
 ### Test Coverage
 - **Unit Tests** - Core components, services, and utilities
@@ -568,8 +569,8 @@ The package maintains high code quality standards with:
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/LaravelPlus/laravel-updater.git
-cd laravel-updater
+git clone https://github.com/yukazakiri/starterkit-updater.git
+cd starterkit-updater
 
 # Install dependencies
 composer install
@@ -592,10 +593,10 @@ We welcome contributions! Please see our [Development Guide](DEVELOPMENT.md) for
 ## Requirements
 
 - **PHP 8.4+** - Latest PHP features and performance
-- **Laravel 12.0+** - **Exclusively designed for Laravel 12** (will not work with older versions)
+- **Laravel 12.x or 13.x** - Older Laravel versions are not supported
 - **Git** - Installed and accessible in PATH
 - **Valid Git Repository** - Working directory must be a Git repository
-- **GitHub Token** - Required for PR creation (optional for direct sync)
+- **GitHub Token** - Required for automatic PR creation (optional for direct updates)
 
 ## License
 
@@ -603,8 +604,8 @@ This package is open-sourced software licensed under the [MIT license](https://o
 
 ## 📊 Package Statistics
 
-- **113 Test Cases** - Comprehensive test coverage
-- **Modern Architecture** - PHP 8.4 + Laravel 12 exclusive
+- **Comprehensive Test Suite** - Unit and feature coverage
+- **Modern Architecture** - PHP 8.4+ with Laravel 12/13 support
 - **PR-First Workflow** - Creates PRs by default for safer updates
 - **Code Quality** - PHPStan Level 8 + Rector + Pint
 - **Zero Dependencies** - Only Laravel framework dependencies
@@ -648,8 +649,8 @@ We welcome contributions from the community! Here's how you can help:
 
 ### Getting Help
 - 📖 **Documentation** - Check this README and [DEVELOPMENT.md](DEVELOPMENT.md)
-- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/LaravelPlus/laravel-updater/issues)
-- 💬 **Discussions** - [GitHub Discussions](https://github.com/LaravelPlus/laravel-updater/discussions)
+- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/yukazakiri/starterkit-updater/issues)
+- 💬 **Discussions** - [GitHub Discussions](https://github.com/yukazakiri/starterkit-updater/discussions)
 - ⭐ **Star the Project** - Show your support!
 
 ### Community

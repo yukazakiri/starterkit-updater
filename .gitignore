@@ -1,8 +1,11 @@
 /.phpunit.result.cache
 /.phpunit.cache
+/.pest.cache
+/.pest.xml
 /.php-cs-fixer.cache
 /.php-cs-fixer.php
 /composer.lock
+/coverage
 /phpunit.xml
 /vendor/
 *.swp

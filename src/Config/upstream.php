@@ -66,7 +66,7 @@ return [
     | Options: vue, react, livewire, custom, or null (no default)
     |
     */
-    'default_preset' => env('UPSTREAM_DEFAULT_PRESET', 'vue'),
+    'default_preset' => env('UPSTREAM_DEFAULT_PRESET', env('UPSTREAM_PRESET', 'vue')),
 
     /*
     |--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Pre-configured settings for official Laravel starter kits.
-    | Use these presets by setting UPSTREAM_PRESET in your .env file.
+    | Use these presets by setting UPSTREAM_DEFAULT_PRESET in your .env file.
     |
     */
     'presets' => [

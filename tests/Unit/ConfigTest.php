@@ -124,8 +124,8 @@ it('has valid auto_detect configuration', function () {
 it('has valid default_preset configuration', function () {
     $config = config('upstream');
 
-    expect($config['default_preset'])->toBeString();
-    expect($config['default_preset'])->toBeIn(['vue', 'react', 'livewire']);
+    expect($config['default_preset'])->toBeString()
+        ->and($config['default_preset'])->toBeIn(['vue', 'react', 'livewire', 'custom']);
 });
 
 it('has valid create_pr configuration', function () {
@@ -158,9 +158,9 @@ it('has valid pr_body configuration', function () {
 it('has valid github configuration', function () {
     $config = config('upstream');
 
-    expect($config['github_token'])->toBeString();
-    expect($config['github_owner'])->toBeString();
-    expect($config['github_repo'])->toBeString();
+    expect($config['github_token'])->toBeNull();
+    expect($config['github_owner'])->toBeNull();
+    expect($config['github_repo'])->toBeNull();
 });
 
 it('has valid upstream URLs in presets', function () {

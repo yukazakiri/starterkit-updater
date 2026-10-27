@@ -61,7 +61,7 @@ final readonly class GitService
     public function branchExists(string $branch): bool
     {
         try {
-            $this->versionControl->run(['rev-parse', '--verify', $branch], throw: false);
+            $this->versionControl->run(['rev-parse', '--verify', 'refs/heads/'.$branch]);
 
             return true;
         } catch (RuntimeException) {

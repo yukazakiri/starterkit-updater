@@ -25,10 +25,18 @@ trait HasPrompts
     protected function select(string $question, array $options, ?string $default = null): string
     {
         if ($this->hasPrompts()) {
-            return \Laravel\Prompts\select($question, $options, $default);
+            $answer = \Laravel\Prompts\select($question, $options, $default);
+
+            return is_string($answer) ? $answer : (string) $answer;
         }
 
-        return $this->choice($question, array_keys($options), $default);
+        $answer = $this->choice($question, array_keys($options), $default);
+
+        if (is_array($answer)) {
+            $answer = reset($answer);
+        }
+
+        return (string) $answer;
     }
 
     /**

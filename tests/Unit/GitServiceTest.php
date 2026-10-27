@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use LaravelPlus\LaravelUpdater\Contracts\VersionControlInterface;
 use LaravelPlus\LaravelUpdater\Services\GitService;
-use LaravelPlus\LaravelUpdater\Support\VersionControl;
 
 beforeEach(function () {
-    $this->versionControl = Mockery::mock(VersionControl::class);
+    $this->versionControl = Mockery::mock(VersionControlInterface::class);
     $this->gitService = new GitService($this->versionControl);
 });
 
@@ -14,7 +14,7 @@ afterEach(function () {
     Mockery::close();
 });
 
-it('can add remote if it does not exist', function () {
+it('adds a remote when it does not exist', function () {
     $this->versionControl->shouldReceive('hasRemote')
         ->with('upstream')
         ->once()
@@ -25,215 +25,206 @@ it('can add remote if it does not exist', function () {
         ->once()
         ->andReturn('');
 
-    $result = $this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git');
-
-    expect($result)->toBeTrue();
+    expect($this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git'))->toBeTrue();
 });
 
-it('returns true if remote already exists', function () {
+it('does not add a remote that already exists', function () {
     $this->versionControl->shouldReceive('hasRemote')
         ->with('upstream')
         ->once()
         ->andReturn(true);
 
-    $result = $this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git');
-
-    expect($result)->toBeTrue();
+    expect($this->gitService->addRemoteIfNotExists('upstream', 'https://github.com/test/repo.git'))->toBeTrue();
 });
 
-it('can fetch from remote', function () {
+it('fetches from a remote', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['fetch', 'upstream'])
         ->once()
         ->andReturn('From https://github.com/test/repo.git');
 
-    $result = $this->gitService->fetch('upstream');
-
-    expect($result)->toBe('From https://github.com/test/repo.git');
+    expect($this->gitService->fetch('upstream'))->toBe('From https://github.com/test/repo.git');
 });
 
-it('can get current branch', function () {
+it('returns the current branch', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', '--abbrev-ref', 'HEAD'])
         ->once()
-        ->andReturn('main');
+        ->andReturn(" main \n");
 
-    $result = $this->gitService->getCurrentBranch();
-
-    expect($result)->toBe('main');
+    expect($this->gitService->getCurrentBranch())->toBe('main');
 });
 
-it('can check if branch exists', function () {
+it('detects an existing branch', function () {
     $this->versionControl->shouldReceive('run')
-        ->with(['rev-parse', '--verify', 'main'], false)
+        ->with(['rev-parse', '--verify', 'refs/heads/main'])
         ->once()
         ->andReturn('abc123');
 
-    $result = $this->gitService->branchExists('main');
-
-    expect($result)->toBeTrue();
+    expect($this->gitService->branchExists('main'))->toBeTrue();
 });
 
-it('returns false if branch does not exist', function () {
+it('detects a missing branch when rev-parse fails', function () {
     $this->versionControl->shouldReceive('run')
-        ->with(['rev-parse', '--verify', 'nonexistent'], false)
+        ->with(['rev-parse', '--verify', 'refs/heads/nonexistent'])
         ->once()
         ->andThrow(new RuntimeException('fatal: Needed a single revision'));
 
-    $result = $this->gitService->branchExists('nonexistent');
-
-    expect($result)->toBeFalse();
+    expect($this->gitService->branchExists('nonexistent'))->toBeFalse();
 });
 
-it('can create and checkout new branch', function () {
+it('creates and checks out a new branch', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['checkout', '-b', 'feature-branch'])
         ->once()
-        ->andReturn('Switched to a new branch \'feature-branch\'');
+        ->andReturn("Switched to a new branch 'feature-branch'");
 
-    $result = $this->gitService->createAndCheckoutBranch('feature-branch');
-
-    expect($result)->toBe('Switched to a new branch \'feature-branch\'');
+    expect($this->gitService->createAndCheckoutBranch('feature-branch'))
+        ->toBe("Switched to a new branch 'feature-branch'");
 });
 
-it('can checkout existing branch', function () {
+it('checks out an existing branch', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['checkout', 'main'])
         ->once()
-        ->andReturn('Switched to branch \'main\'');
+        ->andReturn("Switched to branch 'main'");
 
-    $result = $this->gitService->checkoutBranch('main');
-
-    expect($result)->toBe('Switched to branch \'main\'');
+    expect($this->gitService->checkoutBranch('main'))->toBe("Switched to branch 'main'");
 });
 
-it('can merge branch with unrelated histories', function () {
+it('ensures a missing branch is created', function () {
+    $this->versionControl->shouldReceive('run')
+        ->with(['rev-parse', '--verify', 'refs/heads/new-branch'])
+        ->once()
+        ->andThrow(new RuntimeException('not found'));
+
+    $this->versionControl->shouldReceive('run')
+        ->with(['checkout', '-b', 'new-branch'])
+        ->once()
+        ->andReturn('created');
+
+    expect($this->gitService->ensureBranchExists('new-branch'))->toBe('created');
+});
+
+it('ensures an existing branch is checked out', function () {
+    $this->versionControl->shouldReceive('run')
+        ->with(['rev-parse', '--verify', 'refs/heads/main'])
+        ->once()
+        ->andReturn('abc123');
+
+    $this->versionControl->shouldReceive('run')
+        ->with(['checkout', 'main'])
+        ->once()
+        ->andReturn('checked out');
+
+    expect($this->gitService->ensureBranchExists('main'))->toBe('checked out');
+});
+
+it('merges with unrelated histories', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['merge', 'upstream/main', '--allow-unrelated-histories'])
         ->once()
-        ->andReturn('Merge made by the \'recursive\' strategy.');
+        ->andReturn('merged');
 
-    $result = $this->gitService->merge('upstream/main', true);
-
-    expect($result)->toBe('Merge made by the \'recursive\' strategy.');
+    expect($this->gitService->merge('upstream/main', true))->toBe('merged');
 });
 
-it('can merge branch without unrelated histories', function () {
+it('merges without unrelated histories', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['merge', 'upstream/main'])
         ->once()
-        ->andReturn('Merge made by the \'recursive\' strategy.');
+        ->andReturn('merged');
 
-    $result = $this->gitService->merge('upstream/main', false);
-
-    expect($result)->toBe('Merge made by the \'recursive\' strategy.');
+    expect($this->gitService->merge('upstream/main'))->toBe('merged');
 });
 
-it('can rebase branch', function () {
+it('rebases onto a branch', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rebase', 'upstream/main'])
         ->once()
-        ->andReturn('Successfully rebased and updated refs/heads/main.');
+        ->andReturn('rebased');
 
-    $result = $this->gitService->rebase('upstream/main');
-
-    expect($result)->toBe('Successfully rebased and updated refs/heads/main.');
+    expect($this->gitService->rebase('upstream/main'))->toBe('rebased');
 });
 
-it('can check for uncommitted changes', function () {
+it('detects uncommitted changes', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['status', '--porcelain'], false)
         ->once()
         ->andReturn('M  modified-file.php');
 
-    $result = $this->gitService->hasUncommittedChanges();
-
-    expect($result)->toBeTrue();
+    expect($this->gitService->hasUncommittedChanges())->toBeTrue();
 });
 
-it('returns false when no uncommitted changes', function () {
+it('reports a clean working tree', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['status', '--porcelain'], false)
         ->once()
         ->andReturn('');
 
-    $result = $this->gitService->hasUncommittedChanges();
-
-    expect($result)->toBeFalse();
+    expect($this->gitService->hasUncommittedChanges())->toBeFalse();
 });
 
-it('can commit changes', function () {
+it('commits changes', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['commit', '-m', 'feat: add new feature'])
         ->once()
         ->andReturn('[main abc123] feat: add new feature');
 
-    $result = $this->gitService->commit('feat: add new feature');
-
-    expect($result)->toBe('[main abc123] feat: add new feature');
+    expect($this->gitService->commit('feat: add new feature'))->toBe('[main abc123] feat: add new feature');
 });
 
-it('can push to remote', function () {
+it('pushes a branch', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['push', 'origin', 'main'])
         ->once()
-        ->andReturn('To https://github.com/test/repo.git');
+        ->andReturn('pushed');
 
-    $result = $this->gitService->push('origin', 'main');
-
-    expect($result)->toBe('To https://github.com/test/repo.git');
+    expect($this->gitService->push('origin', 'main'))->toBe('pushed');
 });
 
-it('can get latest commit hash', function () {
+it('returns the latest commit hash', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'HEAD'])
         ->once()
-        ->andReturn('abc123def456');
+        ->andReturn("abc123def456\n");
 
-    $result = $this->gitService->getLatestCommitHash();
-
-    expect($result)->toBe('abc123def456');
+    expect($this->gitService->getLatestCommitHash())->toBe('abc123def456');
 });
 
-it('can get remote commit hash', function () {
+it('returns a remote commit hash', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'upstream/main'])
         ->once()
         ->andReturn('def456ghi789');
 
-    $result = $this->gitService->getRemoteCommitHash('upstream', 'main');
-
-    expect($result)->toBe('def456ghi789');
+    expect($this->gitService->getRemoteCommitHash('upstream', 'main'))->toBe('def456ghi789');
 });
 
-it('can check if branches are up to date', function () {
+it('detects when local and remote branches match', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'HEAD'])
         ->once()
-        ->andReturn('abc123def456');
+        ->andReturn('abc123');
 
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'upstream/main'])
         ->once()
-        ->andReturn('abc123def456');
+        ->andReturn('abc123');
 
-    $result = $this->gitService->isUpToDate('upstream', 'main');
-
-    expect($result)->toBeTrue();
+    expect($this->gitService->isUpToDate('upstream', 'main'))->toBeTrue();
 });
 
-it('returns false when branches are not up to date', function () {
+it('detects when local and remote branches differ', function () {
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'HEAD'])
         ->once()
-        ->andReturn('abc123def456');
+        ->andReturn('abc123');
 
     $this->versionControl->shouldReceive('run')
         ->with(['rev-parse', 'upstream/main'])
         ->once()
-        ->andReturn('def456ghi789');
+        ->andReturn('def456');
 
-    $result = $this->gitService->isUpToDate('upstream', 'main');
-
-    expect($result)->toBeFalse();
+    expect($this->gitService->isUpToDate('upstream', 'main'))->toBeFalse();
 });

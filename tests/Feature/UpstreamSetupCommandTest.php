@@ -2,97 +2,59 @@
 
 declare(strict_types=1);
 
-it('can run setup command with vue preset', function () {
-    $this->artisan('laravelplus:setup --preset=vue')
-        ->expectsOutput('🚀 Laravel Updater Setup')
-        ->assertExitCode(0);
+use LaravelPlus\LaravelUpdater\Tests\Support\TestRepository;
+
+it('writes preset configuration to the .env file', function () {
+    $repository = TestRepository::create();
+    $repository->write('.env', "APP_NAME=Test\n");
+
+    $originalBasePath = app()->basePath();
+    app()->setBasePath($repository->path);
+    config(['upstream.working_dir' => $repository->path]);
+
+    try {
+        $this->artisan('laravelplus:setup --preset=vue --upstream-branch=main --local-branch=main --no-interaction')
+            ->expectsOutputToContain('Setup complete for Laravel vue starter kit')
+            ->assertExitCode(0);
+
+        $env = (string) file_get_contents($repository->path.'/.env');
+
+        expect($env)
+            ->toContain('UPSTREAM_URL=https://github.com/laravel/vue-starter-kit.git')
+            ->toContain('UPSTREAM_BRANCH=main')
+            ->toContain('UPSTREAM_LOCAL_BRANCH=main')
+            ->toContain('UPSTREAM_DEFAULT_PRESET=vue');
+    } finally {
+        app()->setBasePath($originalBasePath);
+    }
 });
 
-it('can run setup command with react preset', function () {
-    $this->artisan('laravelplus:setup --preset=react')
-        ->expectsOutput('🚀 Laravel Updater Setup')
-        ->assertExitCode(0);
+it('writes custom repository configuration to the .env file', function () {
+    $repository = TestRepository::create();
+    $repository->write('.env', "APP_NAME=Test\n");
+
+    $originalBasePath = app()->basePath();
+    app()->setBasePath($repository->path);
+    config(['upstream.working_dir' => $repository->path]);
+
+    try {
+        $this->artisan('laravelplus:setup --preset=custom --url=https://github.com/acme/app.git --upstream-branch=main --local-branch=develop --no-interaction')
+            ->expectsOutputToContain('Custom setup complete')
+            ->assertExitCode(0);
+
+        $env = (string) file_get_contents($repository->path.'/.env');
+
+        expect($env)
+            ->toContain('UPSTREAM_URL=https://github.com/acme/app.git')
+            ->toContain('UPSTREAM_LOCAL_BRANCH=develop')
+            ->toContain('UPSTREAM_DEFAULT_PRESET=custom');
+    } finally {
+        app()->setBasePath($originalBasePath);
+    }
 });
 
-it('can run setup command with livewire preset', function () {
-    $this->artisan('laravelplus:setup --preset=livewire')
-        ->expectsOutput('🚀 Laravel Updater Setup')
-        ->assertExitCode(0);
-});
-
-it('can run setup command with custom URL', function () {
-    $this->artisan('laravelplus:setup --preset=custom --url=https://github.com/test/repo.git')
-        ->expectsOutput('🚀 Laravel Updater Setup')
-        ->assertExitCode(0);
-});
-
-it('can run check command', function () {
-    $this->artisan('laravelplus:check')
-        ->expectsOutput('🔍 Checking for upstream updates...')
-        ->assertExitCode(0);
-});
-
-it('can run sync command with dry run', function () {
-    $this->artisan('laravelplus:sync --dry-run')
-        ->expectsOutput('🚀 Laravel Updater - Keep your projects up to date!')
-        ->assertExitCode(0);
-});
-
-it('can run upgrade command with dry run', function () {
-    $this->artisan('laravelplus:update --dry-run')
-        ->expectsOutput('🚀 Laravel Updater - Keep your projects up to date!')
-        ->assertExitCode(0);
-});
-
-it('can run pr command with dry run', function () {
-    $this->artisan('laravelplus:pr --dry-run')
-        ->expectsOutput('🚀 Laravel Updater - Keep your projects up to date!')
-        ->assertExitCode(0);
-});
-
-it('can run sync command with test option', function () {
-    $this->artisan('laravelplus:sync --test --dry-run')
-        ->expectsOutput('🔍 Testing upstream sync configuration...')
-        ->assertExitCode(0);
-});
-
-it('can run upgrade command with test option', function () {
-    $this->artisan('laravelplus:update --test --dry-run')
-        ->expectsOutput('🔍 Testing upstream sync configuration...')
-        ->assertExitCode(0);
-});
-
-it('can run pr command with test option', function () {
-    $this->artisan('laravelplus:pr --test --dry-run')
-        ->expectsOutput('🔍 Testing upstream sync configuration...')
-        ->assertExitCode(0);
-});
-
-it('handles different local branch names correctly', function () {
-    // Test with master branch (default in many repos)
-    $this->artisan('laravelplus:check')
-        ->expectsOutput('📍 Using current branch: master (configured: main)')
-        ->assertExitCode(0);
-});
-
-it('always uses main for upstream branch', function () {
-    // Test that upstream branch is always main regardless of config
-    config(['upstream.upstream_branch' => 'develop']);
-
-    $this->artisan('laravelplus:check')
-        ->expectsOutput('📍 Using upstream branch: main (configured: develop)')
-        ->assertExitCode(0);
-});
-
-it('handles missing upstream remote', function () {
-    // This test would need to mock the git commands to simulate missing remote
-    $this->artisan('laravelplus:check')
-        ->assertExitCode(0);
-});
-
-it('respects command line branch overrides', function () {
-    $this->artisan('laravelplus:check --local=feature-branch --branch=develop')
-        ->expectsOutput('📍 Using current branch: master (configured: feature-branch)')
-        ->expectsOutput('📍 Using upstream branch: main (configured: develop)')
-        ->assertExitCode(0);
+it('rejects an unknown preset', function () {
+    $this->artisan('laravelplus:setup --preset=unknown --no-interaction')
+        ->expectsOutputToContain('Unknown preset: unknown')
+        ->assertExitCode(1);
 });

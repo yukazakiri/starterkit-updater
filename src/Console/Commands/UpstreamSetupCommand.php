@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace LaravelPlus\LaravelUpdater\Console\Commands;
 
 use Illuminate\Support\Facades\File;
+use LaravelPlus\LaravelUpdater\Support\GitHubRepository;
 use LaravelPlus\LaravelUpdater\Traits\HasPrompts;
-use LaravelPlus\LaravelUpdater\Support\VersionControl;
 
 final class UpstreamSetupCommand extends AbstractUpstreamCommand
 {
@@ -15,6 +15,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
     protected $signature = 'laravelplus:setup
         {--preset= : Preset to use (vue, react, livewire, custom)}
         {--url= : Custom upstream URL}
+        {--upstream-branch= : Upstream branch to pull from}
+        {--local-branch= : Local branch that receives update PRs}
         {--force : Overwrite existing configuration}';
 
     protected $description = 'Setup upstream sync configuration for your Laravel starter kit.';
@@ -25,14 +27,14 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->displayWelcomeMessage();
 
         // Check Laravel version compatibility
-        if (!$this->checkLaravelVersion()) {
+        if (! $this->checkLaravelVersion()) {
             return self::FAILURE;
         }
 
         $this->info('🚀 Laravel Updater Setup');
         $this->newLine();
 
-        $preset = $this->option('preset') ?: $this->select(
+        $preset = $this->stringOption('preset') ?: $this->select(
             'Which Laravel starter kit are you using?',
             [
                 'vue' => 'Vue Starter Kit - Vue 3 + Inertia.js + TypeScript + Tailwind CSS',
@@ -78,9 +80,8 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
     private function checkLaravelVersion(): bool
     {
         $laravelVersion = app()->version();
-        $versionNumber = (float) substr($laravelVersion, 0, 3);
-        
-        if ($versionNumber < 12.0) {
+
+        if (version_compare($laravelVersion, '12.0.0', '<')) {
             $this->error('❌ Laravel Version Incompatible');
             $this->newLine();
             $this->line('🚫 <error>Laravel Updater requires Laravel 12.0 or higher</error>');
@@ -88,22 +89,56 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             $this->line('📍 Required version: <info>12.0+</info>');
             $this->newLine();
             $this->line('🔧 <comment>To update Laravel:</comment>');
-            $this->line('   1. Update your composer.json to require "laravel/framework": "^12.0"');
+            $this->line('   1. Update your composer.json to require "laravel/framework": "^12.0|^13.0"');
             $this->line('   2. Run: <info>composer update laravel/framework</info>');
-            $this->line('   3. Update your application code for Laravel 12 compatibility');
+            $this->line('   3. Update your application code for Laravel 12/13 compatibility');
             $this->line('   4. Run this setup command again');
             $this->newLine();
-            $this->line('📚 <comment>Laravel 12 Upgrade Guide:</comment>');
+            $this->line('📚 <comment>Laravel Upgrade Guides:</comment>');
             $this->line('   • <info>https://laravel.com/docs/12.x/upgrade</info>');
+            $this->line('   • <info>https://laravel.com/docs/13.x/upgrade</info>');
             $this->newLine();
-            
+
             return false;
         }
-        
+
         $this->line("✅ Laravel version check passed: <info>$laravelVersion</info>");
         $this->newLine();
-        
+
         return true;
+    }
+
+    private function askUpstreamBranch(): string
+    {
+        $option = $this->option('upstream-branch');
+
+        if (is_string($option) && $option !== '') {
+            return $option;
+        }
+
+        return $this->text(
+            'Which branch should we pull from in the upstream repository?',
+            default: 'main',
+            placeholder: 'e.g., main, master, develop (this is the branch in the upstream repo)'
+        );
+    }
+
+    private function askLocalBranch(): string
+    {
+        $option = $this->option('local-branch');
+
+        if (is_string($option) && $option !== '') {
+            return $option;
+        }
+
+        $currentBranch = $this->versionControl->run(['rev-parse', '--abbrev-ref', 'HEAD'], throw: false);
+        $default = $currentBranch !== '' && ! str_contains($currentBranch, 'fatal:') ? $currentBranch : 'main';
+
+        return $this->text(
+            'Which local branch should receive the updates? (PRs will be created against this branch)',
+            default: $default,
+            placeholder: 'e.g., main, master, dev (your main project branch)'
+        );
     }
 
     private function setupPreset(string $preset): int
@@ -120,36 +155,23 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->newLine();
 
         // Ask for upstream branch (what branch to pull from in the upstream repo)
-        $upstreamBranch = $this->text(
-            'Which branch should we pull from in the upstream repository?',
-            default: 'main',
-            placeholder: 'e.g., main, master, develop (this is the branch in the upstream repo)'
-        );
-        
+        $upstreamBranch = $this->askUpstreamBranch();
+
         $this->line("🌿 Upstream branch: <info>$upstreamBranch</info> (branch in {$config['upstream_url']})");
 
         // Ask for local branch (what branch to create PRs against)
-        $localBranch = $this->text(
-            'Which local branch should receive the updates? (PRs will be created against this branch)',
-            default: 'dev',
-            placeholder: 'e.g., master, dev, main (your main project branch)'
-        );
+        $localBranch = $this->askLocalBranch();
 
         // Update .env file
         $this->updateEnvFile([
             'UPSTREAM_URL' => $config['upstream_url'],
             'UPSTREAM_BRANCH' => $upstreamBranch,
             'UPSTREAM_LOCAL_BRANCH' => $localBranch,
-            'UPSTREAM_PRESET' => $preset,
+            'UPSTREAM_DEFAULT_PRESET' => $preset,
         ]);
 
         // Optional GitHub PR auto-creation setup
         $this->setupGitHubPrOption();
-
-        // Update config file if needed
-        if ($this->option('force') || $this->confirmPrompt('Update config/upstream.php with preset hooks?', default: true)) {
-            $this->updateConfigFile($config);
-        }
 
         $this->newLine();
         $this->info("✅ Setup complete for Laravel $preset starter kit!");
@@ -166,7 +188,7 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->line('🔍 <comment>What will happen when you run these commands:</comment>');
         $this->line('   • <info>laravelplus:check</info> - Shows detailed information about available updates');
         $this->line('   • <info>laravelplus:update</info> - Creates a new branch and PR with upstream changes');
-        $this->line('   • PRs target your <info>' . $localBranch . '</info> branch for safe review');
+        $this->line('   • PRs target your <info>'.$localBranch.'</info> branch for safe review');
         $this->line('   • You can review changes on GitHub before merging');
         $this->newLine();
         $this->line('🛡️ <comment>Safety Features:</comment>');
@@ -179,7 +201,7 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
 
     private function setupCustom(): int
     {
-        $url = $this->option('url') ?: $this->text(
+        $url = $this->stringOption('url') ?: $this->text(
             'Enter your custom upstream repository URL',
             placeholder: 'https://github.com/username/repository.git'
         );
@@ -190,17 +212,9 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             return self::FAILURE;
         }
 
-        $upstreamBranch = $this->text(
-            'Which branch should we pull from in the upstream repository?',
-            default: 'main',
-            placeholder: 'e.g., main, master, develop (this is the branch in the upstream repo)'
-        );
+        $upstreamBranch = $this->askUpstreamBranch();
 
-        $localBranch = $this->text(
-            'Which local branch should receive the updates? (PRs will be created against this branch)',
-            default: 'dev',
-            placeholder: 'e.g., master, dev, main (your main project branch)'
-        );
+        $localBranch = $this->askLocalBranch();
 
         $this->info('Setting up upstream sync for custom repository...');
         $this->newLine();
@@ -210,7 +224,7 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
             'UPSTREAM_URL' => $url,
             'UPSTREAM_BRANCH' => $upstreamBranch,
             'UPSTREAM_LOCAL_BRANCH' => $localBranch,
-            'UPSTREAM_PRESET' => 'custom',
+            'UPSTREAM_DEFAULT_PRESET' => 'custom',
         ]);
 
         // Optional GitHub PR auto-creation setup
@@ -231,7 +245,7 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $this->line('🔍 <comment>What will happen when you run these commands:</comment>');
         $this->line('   • <info>laravelplus:check</info> - Shows detailed information about available updates');
         $this->line('   • <info>laravelplus:update</info> - Creates a new branch and PR with upstream changes');
-        $this->line('   • PRs target your <info>' . $localBranch . '</info> branch for safe review');
+        $this->line('   • PRs target your <info>'.$localBranch.'</info> branch for safe review');
         $this->line('   • You can review changes on GitHub before merging');
         $this->newLine();
         $this->line('🛡️ <comment>Safety Features:</comment>');
@@ -263,11 +277,19 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $envContent = File::get($envPath);
 
         foreach ($config as $key => $value) {
-            $pattern = "/^$key=.*$/m";
+            $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
             $replacement = "$key=$value";
 
-            if (preg_match($pattern, (string) $envContent)) {
-                $envContent = preg_replace($pattern, $replacement, (string) $envContent);
+            if (preg_match($pattern, $envContent) === 1) {
+                $updated = preg_replace($pattern, $replacement, $envContent);
+
+                if ($updated === null) {
+                    $this->warn("Could not update $key in the .env file.");
+
+                    continue;
+                }
+
+                $envContent = $updated;
             } else {
                 $envContent .= "\n$replacement";
             }
@@ -277,38 +299,14 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
     }
 
     /**
-     * Update the config file with preset configuration.
-     *
-     * @param  array<string, mixed>  $config  The preset configuration
-     */
-    private function updateConfigFile(array $config): void
-    {
-        $configPath = config_path('upstream.php');
-
-        if (! File::exists($configPath)) {
-            $this->warn('Config file not found. Run: php artisan vendor:publish --provider="LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider" --tag="config"');
-
-            return;
-        }
-
-        $configContent = File::get($configPath);
-
-        // Update post_update hooks
-        if (isset($config['post_update'])) {
-            $hooks = collect($config['post_update'])->map(fn ($hook): string => "        // '$hook',")->implode("\n");
-            $pattern = '/(\'post_update\' => \[\s*)(.*?)(\s*\],)/s';
-            $replacement = "'post_update' => [\n$hooks\n    ],";
-            $configContent = preg_replace($pattern, $replacement, $configContent);
-        }
-
-        File::put($configPath, $configContent);
-    }
-
-    /**
      * Optionally configure GitHub PR auto-creation.
      */
     private function setupGitHubPrOption(): void
     {
+        if (! $this->input->isInteractive()) {
+            return;
+        }
+
         $this->newLine();
         $this->line('<comment>Optional: Auto-create GitHub Pull Requests</comment>');
         $this->line('If enabled, the updater will call the GitHub API to create the PR for you.');
@@ -325,25 +323,12 @@ final class UpstreamSetupCommand extends AbstractUpstreamCommand
         $repo = (string) (config('upstream.github_repo') ?: '');
 
         if ($owner === '' || $repo === '') {
-            try {
-                $git = new VersionControl(
-                    bin: (string) (config('upstream.git_binary') ?: 'git'),
-                    cwd: (string) (config('upstream.working_dir') ?: base_path())
-                );
-                $origin = $git->run(['remote', 'get-url', 'origin'], throw: false);
-                if ($origin) {
-                    // Supported formats:
-                    // - git@github.com:Owner/Repo.git
-                    // - https://github.com/Owner/Repo.git
-                    // - https://github.com/Owner/Repo
-                    $normalized = rtrim(preg_replace('/\.git$/', '', (string) $origin) ?? '', '/');
-                    if (preg_match('#[:/]([^/]+)/([^/]+)$#', (string) $normalized, $m)) {
-                        $owner = $owner !== '' ? $owner : (string) $m[1];
-                        $repo = $repo !== '' ? $repo : (string) $m[2];
-                    }
-                }
-            } catch (\Throwable) {
-                // ignore
+            $origin = $this->versionControl->run(['remote', 'get-url', 'origin'], throw: false);
+            $parsed = GitHubRepository::parse($origin);
+
+            if ($parsed !== null) {
+                $owner = $owner !== '' ? $owner : $parsed['owner'];
+                $repo = $repo !== '' ? $repo : $parsed['repo'];
             }
         }
 
