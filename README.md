@@ -20,7 +20,8 @@ A maintained fork of [LaravelPlus Updater](https://github.com/LaravelPlus/larave
 - Composer 2
 - Git available in `PATH`
 - A Git repository with an `origin` remote
-- Optional: a GitHub token for automatic pull-request creation
+- Git access to fetch the upstream repository and push to `origin`, with credentials where needed
+- Optional: PHP cURL and a GitHub token for automatic pull-request creation
 
 ## Installation
 
@@ -63,7 +64,7 @@ php artisan laravelplus:check
 php artisan laravelplus:update
 ```
 
-`laravelplus:update` pushes a new branch and creates a GitHub pull request when a token is configured. Without a token, it pushes the branch and, when the GitHub repository can be determined, prints a compare URL so you can open the PR manually.
+`laravelplus:update` pushes a new branch and creates a GitHub pull request when a token is configured. Without a token, it pushes the branch and, when the GitHub repository can be determined, prints a compare URL so you can open the PR manually. The command exits with a failure status if it cannot create the PR, even when the branch was pushed successfully.
 
 To apply the changes directly to your local branch instead, use `--direct`:
 
@@ -75,12 +76,12 @@ php artisan laravelplus:update --direct
 
 - Supports **Laravel 12 and 13** with Composer constraints `^12.0|^13.0` and Testbench `^10.0|^11.0`.
 - Tests every combination of **PHP 8.4/8.5** and **Laravel 12/13** in CI.
-- Aborts cleanly on merge/rebase conflicts, restores the original branch, and never commits conflict markers.
+- Attempts to abort failed merges or rebases and reports when manual recovery is needed. PR mode also attempts to restore the original branch.
 - Never force-pushes by default; `--force-push` uses `--force-with-lease`.
 - Merges preset hooks with configured hooks and runs them correctly.
 - Skips `post_update` hooks in PR mode, where they would run against unmerged code, and runs them in `--direct` mode.
 - Derives GitHub owner/repository from the `origin` remote when configuration is missing, so manual compare URLs are valid for GitHub remotes.
-- Respects the configured upstream branch instead of forcing `main`.
+- Supports upstream branch overrides through `--branch`.
 - Fixes local branch detection used by `GitService::branchExists()`.
 - Ships an MIT `LICENSE`, a CI workflow, and a PHPUnit configuration for parallel tests.
 - Does not track `vendor/` or `composer.lock` in Git.
@@ -114,6 +115,8 @@ Examples:
 | Development upstream | `develop` | `develop` |
 
 During setup, the local branch defaults to the branch currently checked out, or `main` if it cannot be detected.
+
+An active preset can override `UPSTREAM_BRANCH` with its own `upstream_branch` value (normally `main`). To use another branch, pass `--branch=develop` to `laravelplus:check` or `laravelplus:update`, or change the preset's `upstream_branch` in the published configuration.
 
 ### Environment Variables
 
@@ -167,7 +170,7 @@ php artisan laravelplus:setup --preset=livewire
 php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 ```
 
-Setup writes the relevant values to `.env`. Presets provide the upstream URL, upstream branch, and default `post_update` hooks. A custom upstream URL is not overwritten by a preset.
+Setup writes the relevant values to `.env` if that file exists; otherwise, it prints them for you to add manually. Presets provide the upstream URL, upstream branch, and default `post_update` hooks. A custom upstream URL is not overwritten by a different preset.
 
 ### Check for Updates
 
@@ -176,6 +179,7 @@ php artisan laravelplus:check
 ```
 
 This shows the local and upstream commits, recent upstream changes, and a file-change summary.
+It also adds or updates the configured upstream Git remote and fetches it.
 
 ### Check Options
 
@@ -192,8 +196,8 @@ This shows the local and upstream commits, recent upstream changes, and a file-c
 # Default: push a branch and create a GitHub PR
 php artisan laravelplus:update
 
-# Validate configuration and connectivity first
-php artisan laravelplus:update --test
+# Validate configuration and connectivity without applying an update
+php artisan laravelplus:update --test --dry-run
 
 # Custom PR branch, title, or body
 php artisan laravelplus:update --pr-branch=update-vue-starter-kit
@@ -204,7 +208,9 @@ php artisan laravelplus:update --pr-body="Sync the latest upstream changes"
 php artisan laravelplus:update --dry-run
 ```
 
-Before a real update (without `--dry-run`), the working tree must be clean. On a merge or rebase conflict, the command aborts the operation and restores your original branch; nothing is committed or pushed.
+Before a real update (without `--dry-run`), the working tree must be clean. On a merge or rebase failure, the command attempts to abort the operation; if aborting fails, inspect the repository and resolve or abort it manually. PR mode attempts to return to the original branch. Direct mode checks out the target branch and leaves you there.
+
+`--test` validates configuration and connectivity before continuing with the update when validation succeeds. Combine it with `--dry-run` to validate without applying an update. The validation checks the configured values, not command-line URL or branch overrides.
 
 ### Apply Changes Directly
 
@@ -212,7 +218,7 @@ Before a real update (without `--dry-run`), the working tree must be clean. On a
 php artisan laravelplus:update --direct
 ```
 
-This merges or rebases the upstream changes into `UPSTREAM_LOCAL_BRANCH`, then runs `post_update` hooks. Review the result before pushing.
+This merges or rebases the upstream changes into `UPSTREAM_LOCAL_BRANCH`, then runs `post_update` hooks. The built-in Vue, React, and Livewire presets include dependency installation, an npm build, and `php artisan migrate --force`. Review the configured hooks before running; pass `--no-post` to skip them. Review the result before pushing.
 
 ### Update Options
 
@@ -220,7 +226,7 @@ This merges or rebases the upstream changes into `UPSTREAM_LOCAL_BRANCH`, then r
 |--------|-------------|
 | `--direct` | Apply changes directly without creating a pull request |
 | `--dry-run` | Show what would happen without executing |
-| `--test` | Validate configuration and connectivity before updating |
+| `--test` | Validate configuration and connectivity before continuing with the update |
 | `--no-pre` | Skip `pre_update` hooks |
 | `--no-post` | Skip `post_update` hooks |
 | `--strategy=` | Override the strategy (`merge` or `rebase`) |
@@ -248,7 +254,6 @@ Configure shell hooks in `config/upstream.php`:
 
 ```php
 'pre_update' => [
-    'php artisan down',
     'php artisan cache:clear',
 ],
 
@@ -257,11 +262,12 @@ Configure shell hooks in `config/upstream.php`:
     'npm ci',
     'npm run build',
     'php artisan migrate --force',
-    'php artisan up',
 ],
 ```
 
 `post_update` hooks are skipped in PR mode because the PR has not been merged yet and hooks such as migrations would run against unmerged code. They run with `laravelplus:update --direct`.
+
+Preset hooks are merged with configured hooks, so check both lists before running in direct mode. A failed update can prevent post-update hooks from running; avoid relying on them for cleanup that must always occur.
 
 ## Supported Starter Kits
 
@@ -318,6 +324,16 @@ composer test
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for the project structure, architecture notes, and contribution workflow.
 
+### Publishing the Fork
+
+The package is prepared for submission under `yukazakiri/starterkit-updater`. To publish it:
+
+1. Sign in to [Packagist](https://packagist.org/) and submit `https://github.com/yukazakiri/starterkit-updater`.
+2. Configure the Packagist GitHub integration so new commits and tags are indexed automatically.
+3. Create and push a release tag pointing to a commit that contains the fork's Composer name. Once Packagist indexes the tag, Composer can install it as a stable release.
+
+Choose the release version deliberately and push that tag explicitly. The local `v1.0.x` tags inherited from the starter kit are unrelated to this package and should not be pushed as package releases.
+
 ## Troubleshooting
 
 ### Composer cannot find the fork
@@ -326,7 +342,7 @@ Before Packagist submission, make sure the GitHub VCS repository is declared in 
 
 ### "Already up to date" when changes are expected
 
-Check that `UPSTREAM_BRANCH` points to the branch you actually want in the upstream repository and that `UPSTREAM_LOCAL_BRANCH` is your current target branch.
+Check that the selected upstream branch and `UPSTREAM_LOCAL_BRANCH` are correct. An active preset can override `UPSTREAM_BRANCH`; use `--branch` or update the preset configuration as described above.
 
 ### The update refuses to run
 
@@ -334,7 +350,7 @@ The updater requires a clean working tree. Commit or stash local changes first s
 
 ### No pull request is created
 
-Set `GITHUB_TOKEN`, or let `GITHUB_OWNER`/`GITHUB_REPO` be inferred from `origin`. Without a token, the branch is still pushed and a compare URL is printed.
+Set `GITHUB_TOKEN`, and set `GITHUB_OWNER`/`GITHUB_REPO` or let them be inferred from a GitHub `origin`. Without a token, the branch is still pushed and a compare URL is printed when the repository can be identified; the command returns a failure status because it did not create a PR.
 
 ## Contributing
 
