@@ -1,138 +1,141 @@
-# LaravelPlus Updater - Development Guide
+# StarterKit Updater - Development Guide
 
-## 🚀 Getting Started
+This is the development guide for the [yukazakiri/starterkit-updater](https://github.com/yukazakiri/starterkit-updater) fork. The package follows modern PHP 8.4 practices with strict typing, explicit contracts, and a Pest test suite.
 
-This package follows modern PHP 8.4 development practices with strict typing, proper abstractions, and comprehensive testing.
+> The Composer package name (`laravelplus/laravel-updater`), PHP namespace, and `laravelplus:*` Artisan commands are kept for compatibility with the upstream package.
 
-## 📁 Package Structure
+## Getting Started
 
+### Requirements
+
+- PHP 8.4+
+- Composer 2
+- Git
+- PCOV or Xdebug for coverage runs (optional)
+
+```bash
+git clone https://github.com/yukazakiri/starterkit-updater.git
+cd starterkit-updater
+composer install
 ```
+
+## Package Structure
+
+```text
 src/
-├── Contracts/           # Interfaces and contracts
+├── Config/              # Publishable package configuration
 ├── Console/Commands/    # Artisan commands
+├── Contracts/           # Interfaces and contracts
 ├── Exceptions/          # Custom exceptions
-├── Services/           # Business logic services
-├── Support/            # Utility classes
-├── Traits/             # Reusable traits
-└── Config/             # Configuration files
+├── Services/            # Business logic services
+├── Support/             # Git, GitHub, and version-control helpers
+└── Traits/              # Reusable traits
 ```
 
-## 🛠️ Development Commands
+## Development Commands
 
-### Code Formatting
 ```bash
-# Format all code
-composer run format
+# Format code
+composer lint
 
-# Check formatting without fixing
-composer run format:test
+# Apply automated refactors
+composer refactor
+
+# Quality gates
+composer test:refactor   # Rector dry run
+composer test:lint       # Pint
+composer test:types      # PHPStan level 8
+composer test:unit       # Pest with coverage and parallel workers
+
+# Run every quality gate
+composer test
 ```
 
-### Testing
+`composer test:unit` and `composer test` require PCOV or Xdebug for coverage. Without a coverage driver, run Pest directly:
+
 ```bash
-# Run all tests
-composer run test
-
-# Run tests with coverage
-composer run test:coverage
+vendor/bin/pest
+vendor/bin/pest --parallel
+vendor/bin/pest --filter=UpstreamUpgradeCommand
 ```
 
-## 🏗️ Architecture
+CI runs `composer test` on PHP 8.4/8.5 with Laravel 12/13.
 
-### Design Patterns Used
-- **Strategy Pattern** - Git merge/rebase strategies
-- **Factory Pattern** - Exception creation
-- **Template Method Pattern** - Abstract command structure
-- **Dependency Injection** - Service injection
+## Architecture
+
+### Design Patterns
+
+- **Strategy pattern** — merge and rebase sync strategies
+- **Factory pattern** — exception creation
+- **Template method pattern** — shared command lifecycle in `AbstractUpstreamCommand`
+- **Dependency injection** — services and version-control implementations
 
 ### Key Components
 
-#### Contracts (Interfaces)
-- `VersionControlInterface` - Git operations contract
-- `UpstreamCommandInterface` - Command contract
+#### Contracts
 
-#### Services
-- `GitService` - High-level Git operations
-- `VersionControl` - Low-level Git command wrapper
+- `VersionControlInterface` — Git operation contract
+- `UpstreamCommandInterface` — command contract
+
+#### Services and Support
+
+- `GitService` — high-level Git operations
+- `VersionControl` — low-level Git command wrapper
+- `GitHubRepository` — parses GitHub remotes and builds compare URLs
 
 #### Commands
-- `AbstractUpstreamCommand` - Base command with common functionality
-- All commands extend the abstract base class
+
+- `AbstractUpstreamCommand` — shared preset, hook, and connectivity logic
+- `UpstreamSetupCommand` — interactive configuration
+- `UpstreamCheckCommand` — update detection and reporting
+- `UpstreamUpgradeCommand` — PR-first and direct update flows
 
 #### Traits
-- `HasPrompts` - Laravel Prompts integration with fallback
 
-## 🎯 PHP 8.4 Features Used
+- `HasPrompts` — Laravel Prompts integration with console fallbacks
 
-- **Strict Types** - `declare(strict_types=1)` everywhere
-- **Readonly Properties** - Immutable service classes
-- **Constructor Property Promotion** - Clean constructors
-- **Proper Return Types** - All methods have explicit return types
-- **Generic Type Hints** - `array<string, mixed>` etc.
+## PHP 8.4 Features
 
-## 📝 Code Standards
+- `declare(strict_types=1)` throughout the codebase
+- Readonly properties and readonly classes where appropriate
+- Constructor property promotion
+- Explicit parameter and return types
+- Generic array shapes via PHPDoc (`array<string, mixed>`)
 
-- **PSR-12** - PHP coding standard
-- **Laravel Pint** - Code formatting
-- **PHPUnit 11** - Testing framework
-- **Orchestra Testbench** - Laravel package testing
+## Code Standards
 
-## 🔧 Adding New Features
+- **PSR-12** coding style, enforced by Laravel Pint
+- **PHPStan level 8** static analysis
+- **Rector** for automated modernization
+- **Pest 3** on PHPUnit 11
+- **Orchestra Testbench** for Laravel package testing
 
-1. **Create Interface** - Define contract in `Contracts/`
-2. **Implement Service** - Business logic in `Services/`
-3. **Add Command** - Extend `AbstractUpstreamCommand`
-4. **Write Tests** - Comprehensive test coverage
-5. **Format Code** - Run `composer run format`
+## Testing Strategy
 
-## 🧪 Testing Strategy
+- **Unit tests** cover services, support classes, exceptions, configuration, and command helpers.
+- **Feature tests** exercise the Artisan commands against temporary local Git repositories created by `Tests\Support\TestRepository`.
+- **Parallel tests** use `phpunit.xml.dist`; keep it in sync with the Pest bootstrap.
+- Add tests for every behavior change and bug fix. Run `composer test` before opening a pull request.
 
-- **Unit Tests** - Individual class testing
-- **Feature Tests** - Command integration testing
-- **Mocking** - Service dependencies
-- **Coverage** - Aim for 100% code coverage
+## Adding New Features
 
-## 📦 Package Development
+1. Define a contract in `Contracts/` when a new abstraction is needed.
+2. Put Git or domain logic in `Services/` or `Support/`, not in the command.
+3. Extend `AbstractUpstreamCommand` for new Artisan commands.
+4. Add unit and feature coverage, including failure paths.
+5. Run `composer test` and update the README when behavior or options change.
 
-### Local Development
-```bash
-# Install dependencies
-composer install
+## Debugging
 
-# Run formatting
-composer run format
+- Use `--dry-run` to preview an update without changing the repository.
+- Use `--test` to validate configuration, Git connectivity, and branch settings.
+- Add `-vvv` to an Artisan command for verbose console output.
+- Feature tests use temporary repositories, so they do not touch your working copy.
 
-# Run tests
-composer run test
-```
+## Resources
 
-### Publishing
-```bash
-# Tag version
-git tag v1.0.0
-
-# Push to GitHub
-git push origin v1.0.0
-```
-
-## 🎨 Code Quality
-
-- **DRY Principle** - No code duplication
-- **SOLID Principles** - Clean architecture
-- **Type Safety** - Full type hints
-- **Error Handling** - Custom exceptions
-- **Documentation** - PHPDoc blocks
-
-## 🔍 Debugging
-
-- Use `--test` flag for configuration validation
-- Check logs in `storage/logs/`
-- Use `--dry-run` for safe testing
-- Enable verbose output with `-v`
-
-## 📚 Resources
-
-- [Laravel Package Development](https://laravel.com/docs/packages)
-- [PHP 8.4 Features](https://php.net/releases/8.4/en.php)
+- [Laravel package development](https://laravel.com/docs/packages)
+- [PHP 8.4 release notes](https://www.php.net/releases/8.4/en.php)
 - [Laravel Pint](https://laravel.com/docs/pint)
-- [PHPUnit 11](https://phpunit.de/)
+- [PHPStan](https://phpstan.org/)
+- [Pest](https://pestphp.com/)

@@ -1,457 +1,250 @@
-# LaravelPlus Updater
+# StarterKit Updater
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![License](https://img.shields.io/packagist/l/laravelplus/laravel-updater.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue.svg?style=flat-square)](https://packagist.org/packages/laravelplus/laravel-updater)
-[![Laravel Version](https://img.shields.io/badge/Laravel-12.x%20%7C%2013.x-red.svg?style=flat-square)](https://laravel.com)
-[![GitHub Stars](https://img.shields.io/github/stars/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater)
-[![GitHub Issues](https://img.shields.io/github/issues/yukazakiri/starterkit-updater.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater/issues)
 [![Tests](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml/badge.svg)](https://github.com/yukazakiri/starterkit-updater/actions/workflows/tests.yml)
-[![Code Quality](https://img.shields.io/badge/code%20quality-PHPStan%20%7C%20Rector%20%7C%20Pint-blue.svg?style=flat-square)](https://github.com/yukazakiri/starterkit-updater)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-blue.svg)](https://www.php.net/)
+[![Laravel Version](https://img.shields.io/badge/Laravel-12.x%20%7C%2013.x-red.svg)](https://laravel.com)
+[![GitHub Stars](https://img.shields.io/github/stars/yukazakiri/starterkit-updater.svg)](https://github.com/yukazakiri/starterkit-updater)
+[![GitHub Issues](https://img.shields.io/github/issues/yukazakiri/starterkit-updater.svg)](https://github.com/yukazakiri/starterkit-updater/issues)
 
-A professional Laravel package for syncing with upstream repositories (GitHub, GitLab, Bitbucket, etc.) with comprehensive testing, modern architecture, and enterprise-grade features. **This package supports Laravel 12 and 13** and provides a safe, PR-first workflow for keeping your Laravel starter kit projects up to date!
+A maintained fork of [LaravelPlus Updater](https://github.com/LaravelPlus/laravel-updater) for keeping Laravel starter-kit projects in sync with their upstream repository through a safe, PR-first workflow.
 
-## 🚀 Simple 3-Step Workflow
+**Supports Laravel 12 and 13 on PHP 8.4+.**
 
-```bash
-# 1. Setup (one-time)
-php artisan laravelplus:setup
+> The Composer package name (`laravelplus/laravel-updater`), PHP namespace (`LaravelPlus\LaravelUpdater`), and Artisan command prefix (`laravelplus:`) are unchanged, so this fork works as a drop-in replacement for the upstream package.
 
-# 2. Check for updates
-php artisan laravelplus:check
+## Requirements
 
-# 3. Apply updates (creates PR by default)
-php artisan laravelplus:update
-```
-
-That's it! No complex commands to remember - just 3 simple steps to keep your Laravel starter kit up to date.
-
-## ✅ Supported Laravel Versions
-
-> **Important**: This package requires **Laravel 12 or 13** and PHP 8.4+. It will not work with older Laravel versions.
-
-### Why Laravel 12/13?
-- **Modern Architecture** - Built for the streamlined Laravel 11+ application structure
-- **Enhanced Security** - Leverages current Laravel security improvements
-- **Better Performance** - Optimized for current Laravel releases
-- **Future-Proof** - Tested against every supported Laravel release
-
-## 🚀 LaravelPlus Community
-
-Welcome to the **LaravelPlus** community! We're building tools that make Laravel development more enjoyable and productive. Join our community and help shape the future of Laravel tooling.
-
-- 🌟 **Star us on GitHub** - Help us grow the community
-- 🐛 **Report issues** - Help us improve the tools
-- 💡 **Suggest features** - Share your ideas
-- 🤝 **Contribute** - Make Laravel better for everyone
-
-## ✨ Features
-
-### 🎯 **Simple & Powerful**
-- **3 Essential Commands** - `setup`, `check`, `update` - that's it!
-- **PR-First Workflow** - Always creates pull requests by default for safety
-- **Smart Configuration** - Auto-detects your setup and guides you through configuration
-
-### 🔄 **Core Functionality**
-- **Universal Git Support** - GitHub, GitLab, Bitbucket, Azure DevOps, self-hosted
-- **Multiple Strategies** - Support for both merge and rebase strategies
-- **Smart Branch Management** - Automatic branch detection and creation
-- **Safe Operations** - Dry-run mode and comprehensive error handling
-
-### 🧪 **Testing & Quality**
-- **Comprehensive Test Suite** - Unit and feature tests covering all functionality
-- **Built-in Testing** - Validate configuration and connectivity before syncing
-- **Code Quality Tools** - PHPStan, Rector, and Laravel Pint integration
-- **Modern Testing** - Pest PHP with Laravel Testbench
-
-### 🎯 **Starter Kit Support**
-- **Pre-configured Presets** - Vue, React, Livewire starter kits
-- **Auto-detection** - Automatically detect and configure your starter kit
-- **Custom Repositories** - Support for any custom Laravel starter kit
-- **Easy Setup** - Interactive setup command with beautiful prompts
-
-### 🔀 **Advanced Workflows**
-- **PR-First Workflow** - **Creates PRs by default** for safer updates
-- **GitHub Integration** - Automatic PR creation with GitHub API
-- **Direct Application** - Optional direct merge with `--direct` flag when needed
-- **Pre/Post Hooks** - Run custom commands before and after sync
-- **Flexible Configuration** - Environment variables and command-line overrides
-
-### 🏗️ **Modern Architecture**
-- **PHP 8.4 Features** - Strict types, readonly properties, constructor promotion
-- **Interface-based Design** - Clean contracts and abstractions
-- **Service Layer** - Separated business logic from commands
-- **Exception Handling** - Custom exceptions with detailed error messages
-- **Laravel Prompts** - Beautiful command-line interfaces with fallbacks
-
-### 🚀 **Production Ready**
-- **Timeout Protection** - Prevents hanging operations
-- **Memory Management** - Optimized for large repositories
-- **Error Recovery** - Graceful handling of network and Git issues
-- **Logging & Debugging** - Comprehensive logging for troubleshooting
+- PHP 8.4 or newer
+- Laravel 12.x or 13.x
+- Composer 2
+- Git available in `PATH`
+- A Git repository with an `origin` remote
+- Optional: a GitHub token for automatic pull-request creation
 
 ## Installation
 
-> **⚠️ Laravel 12/13**: This package requires Laravel 12 or 13 and PHP 8.4+.
+This fork is distributed from GitHub, not Packagist. Add it as a VCS repository in your project's `composer.json`:
 
-```bash
-composer require laravelplus/laravel-updater
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/yukazakiri/starterkit-updater"
+        }
+    ],
+    "require": {
+        "laravelplus/laravel-updater": "dev-master"
+    }
+}
 ```
 
-## Quick Setup
+Then install it:
 
-### For Laravel Starter Kits
+```bash
+composer update laravelplus/laravel-updater
+```
 
-Use the interactive setup command for quick configuration:
+To install the upstream package instead, use `composer require laravelplus/laravel-updater`.
+
+Laravel package discovery registers the service provider automatically. If package discovery is disabled in your application, register `LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider` manually.
+
+## Quick Start
+
+```bash
+# 1. Configure the upstream repository (one-time)
+php artisan laravelplus:setup
+
+# 2. Check whether updates are available
+php artisan laravelplus:check
+
+# 3. Create a pull request with the upstream changes (default)
+php artisan laravelplus:update
+```
+
+`laravelplus:update` pushes a new branch and creates a GitHub pull request when a token is configured. Without a token, it pushes the branch and, when the GitHub repository can be determined, prints a compare URL so you can open the PR manually.
+
+To apply the changes directly to your local branch instead, use `--direct`:
+
+```bash
+php artisan laravelplus:update --direct
+```
+
+## What This Fork Changes
+
+- Supports **Laravel 12 and 13** with Composer constraints `^12.0|^13.0` and Testbench `^10.0|^11.0`.
+- Tests every combination of **PHP 8.4/8.5** and **Laravel 12/13** in CI.
+- Aborts cleanly on merge/rebase conflicts, restores the original branch, and never commits conflict markers.
+- Never force-pushes by default; `--force-push` uses `--force-with-lease`.
+- Merges preset hooks with configured hooks and runs them correctly.
+- Skips `post_update` hooks in PR mode, where they would run against unmerged code, and runs them in `--direct` mode.
+- Derives GitHub owner/repository from the `origin` remote when configuration is missing, so manual compare URLs are valid for GitHub remotes.
+- Respects the configured upstream branch instead of forcing `main`.
+- Fixes local branch detection used by `GitService::branchExists()`.
+- Ships an MIT `LICENSE`, a CI workflow, and a PHPUnit configuration for parallel tests.
+- Does not track `vendor/` or `composer.lock` in Git.
+
+## Configuration
+
+### Publish the Config File
+
+```bash
+php artisan vendor:publish \
+    --provider="LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider" \
+    --tag=config
+```
+
+This creates `config/upstream.php`.
+
+### Branch Settings
+
+Two branch settings control the sync:
+
+- **`UPSTREAM_BRANCH`** — the branch in the upstream repository to pull from, such as `main`, `master`, or `develop`.
+- **`UPSTREAM_LOCAL_BRANCH`** — your project branch that receives the PR, such as `main`, `master`, or `develop`.
+
+Examples:
+
+| Scenario | `UPSTREAM_BRANCH` | `UPSTREAM_LOCAL_BRANCH` |
+|----------|-------------------|--------------------------|
+| Modern project | `main` | `main` |
+| Legacy main branch | `main` | `master` |
+| Development branch | `main` | `dev` |
+| Development upstream | `develop` | `develop` |
+
+During setup, the local branch defaults to the branch currently checked out, or `main` if it cannot be detected.
+
+### Environment Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `UPSTREAM_URL` | `https://github.com/laravel/vue-starter-kit.git` | Upstream Git repository |
+| `UPSTREAM_BRANCH` | `main` | Branch to pull from upstream |
+| `UPSTREAM_LOCAL_BRANCH` | `main` | Local branch that receives the PR |
+| `UPSTREAM_STRATEGY` | `merge` | `merge` or `rebase` |
+| `UPSTREAM_ALLOW_UNRELATED` | `true` | Allow merging unrelated histories |
+| `UPSTREAM_DEFAULT_PRESET` | `vue` | Default starter-kit preset |
+| `UPSTREAM_PR_BRANCH_PREFIX` | `laravelplus-updater-` | Prefix for generated PR branches |
+| `UPSTREAM_PR_TITLE` | `chore: sync from upstream` | Default PR title |
+| `UPSTREAM_PR_BODY` | `Automated upstream sync from {upstream_url}` | Default PR body |
+| `GITHUB_TOKEN` | unset | Token used to create pull requests |
+| `GITHUB_OWNER` | inferred from `origin` | GitHub owner or organization |
+| `GITHUB_REPO` | inferred from `origin` | GitHub repository name |
+| `GIT_BINARY` | `git` | Git executable |
+
+`working_dir`, hooks, and presets are configured in `config/upstream.php`.
+
+### GitHub Token
+
+Automatic PR creation requires a GitHub token. A classic token needs the `repo` scope. A fine-grained token needs:
+
+- **Pull requests:** Read and write
+- **Contents:** Read and write
+
+```env
+GITHUB_TOKEN=ghp_your_token_here
+GITHUB_OWNER=your_username
+GITHUB_REPO=your_repository
+```
+
+If `GITHUB_OWNER` or `GITHUB_REPO` is omitted, the updater reads them from the `origin` remote. Automatic PR creation currently supports GitHub only; other Git hosts are synced through Git and the resulting branch can be opened as a merge request manually.
+
+## Usage
+
+### Set Up a Starter Kit
 
 ```bash
 # Interactive setup
 php artisan laravelplus:setup
 
-# Or specify your starter kit directly
+# Official Laravel starter-kit presets
 php artisan laravelplus:setup --preset=vue
 php artisan laravelplus:setup --preset=react
 php artisan laravelplus:setup --preset=livewire
-```
 
-### For Custom Repositories
-
-```bash
+# Any custom Git repository
 php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
 ```
 
-## Configuration
+Setup writes the relevant values to `.env`. Presets provide the upstream URL, upstream branch, and default `post_update` hooks. A custom upstream URL is not overwritten by a preset.
 
-### Branch Configuration Explained
-
-The package uses two important branch settings:
-
-- **`UPSTREAM_BRANCH`**: The branch in the upstream repository to pull changes from (e.g., `main`, `master`, `develop`)
-- **`UPSTREAM_LOCAL_BRANCH`**: Your main project branch where PRs will be created against (e.g., `main`, `master`, `develop`)
-
-**Example scenarios:**
-- **Modern Project**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=main` (your repo)
-- **Legacy Project**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=master` (your repo)
-- **Development Workflow**: `UPSTREAM_BRANCH=main` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=dev` (your repo)
-- **Feature Branch Workflow**: `UPSTREAM_BRANCH=develop` (upstream repo) → `UPSTREAM_LOCAL_BRANCH=develop` (your repo)
-
-### Common Branch Naming Conventions
-
-Most projects use these branch naming patterns:
-
-- **`dev`** - Development branch (most common in many projects)
-- **`master`** - Traditional main branch (common in older projects)
-- **`main`** - Modern main branch (newer projects, GitHub default)
-- **`develop`** - GitFlow development branch
-- **`staging`** - Staging environment branch
-
-**Setup defaults to `dev`** as it's the most common development branch convention.
-
-### Publish Configuration
-
-Publish the configuration file:
+### Check for Updates
 
 ```bash
-php artisan vendor:publish --provider="LaravelPlus\LaravelUpdater\LaravelUpdaterServiceProvider" --tag="config"
-```
-
-This will create `config/upstream.php` with the following options:
-
-```php
-return [
-    'upstream_url'    => env('UPSTREAM_URL', 'https://github.com/laravel/vue-starter-kit.git'),
-    'upstream_branch' => env('UPSTREAM_BRANCH', 'main'),
-    'local_branch'    => env('UPSTREAM_LOCAL_BRANCH', 'main'),
-    'strategy'        => env('UPSTREAM_STRATEGY', 'merge'),
-    'git_binary'      => env('GIT_BINARY', 'git'),
-    'working_dir'     => base_path(),
-    'commit_message'  => env('UPSTREAM_COMMIT_MESSAGE', 'chore(upstream): sync from upstream'),
-    'allow_unrelated_histories' => (bool) env('UPSTREAM_ALLOW_UNRELATED', true),
-    
-    'pre_update' => [
-        // 'php artisan down',
-        // 'php artisan cache:clear',
-    ],
-    
-    'post_update' => [
-        // 'composer install --no-interaction --prefer-dist --optimize-autoloader',
-        // 'npm ci',
-        // 'npm run build',
-        // 'php artisan migrate --force',
-        // 'php artisan up',
-    ],
-];
-```
-
-## Environment Variables
-
-Add these to your `.env` file:
-
-```env
-# Upstream repository configuration
-UPSTREAM_URL=https://github.com/your-upstream/repo.git
-UPSTREAM_BRANCH=main                    # Branch in upstream repo to pull from
-UPSTREAM_LOCAL_BRANCH=dev               # Your main project branch (PRs created against this)
-UPSTREAM_STRATEGY=merge
-UPSTREAM_COMMIT_MESSAGE="chore(upstream): sync from upstream"
-UPSTREAM_ALLOW_UNRELATED=true
-
-# Preset configuration
-UPSTREAM_DEFAULT_PRESET=vue
-UPSTREAM_AUTO_DETECT=true
-
-# PR configuration
-UPSTREAM_CREATE_PR=false
-UPSTREAM_PR_BRANCH_PREFIX=upstream-sync-
-UPSTREAM_PR_TITLE="chore: sync from upstream"
-UPSTREAM_PR_BODY="Automated upstream sync from {upstream_url}"
-
-# GitHub integration
-GITHUB_TOKEN=your_github_token
-GITHUB_OWNER=your_username
-GITHUB_REPO=your_repo
-
-# Git configuration
-GIT_BINARY=git
-```
-
-## Usage
-
-### Recommended Workflow
-
-The recommended workflow is to check for updates first, then upgrade. **The package creates PRs by default for safer updates:**
-
-```bash
-# 1. Check if updates are available
 php artisan laravelplus:check
+```
 
-# 2. If updates are available, upgrade your project (creates PR by default)
+This shows the local and upstream commits, recent upstream changes, and a file-change summary.
+
+### Check Options
+
+| Option | Description |
+|--------|-------------|
+| `--upstream=` | Override the upstream URL |
+| `--branch=` | Override the upstream branch |
+| `--local=` | Override the local branch |
+| `--remote-name=` | Remote name to use (default: `upstream`) |
+
+### Create a Pull Request
+
+```bash
+# Default: push a branch and create a GitHub PR
 php artisan laravelplus:update
 
-# 3. For direct application (bypasses PR creation)
-php artisan laravelplus:update --direct
-```
-
-### Quick Start Examples
-
-#### Vue Starter Kit
-```bash
-# 1. Setup for Vue starter kit (one-time)
-php artisan laravelplus:setup --preset=vue
-
-# 2. Check for updates
-php artisan laravelplus:check
-
-# 3. Apply updates (creates PR by default)
-php artisan laravelplus:update
-```
-
-#### React Starter Kit
-```bash
-# 1. Setup for React starter kit (one-time)
-php artisan laravelplus:setup --preset=react
-
-# 2. Check for updates
-php artisan laravelplus:check
-
-# 3. Apply updates (creates PR by default)
-php artisan laravelplus:update
-```
-
-#### Livewire Starter Kit
-```bash
-# 1. Setup for Livewire starter kit (one-time)
-php artisan laravelplus:setup --preset=livewire
-
-# 2. Check for updates
-php artisan laravelplus:check
-
-# 3. Apply updates (creates PR by default)
-php artisan laravelplus:update
-```
-
-#### Custom Repository
-```bash
-# 1. Setup for custom repository (one-time)
-php artisan laravelplus:setup --preset=custom --url=https://github.com/your-org/your-repo.git
-
-# 2. Check for updates
-php artisan laravelplus:check
-
-# 3. Apply updates (creates PR by default)
-php artisan laravelplus:update
-```
-
-### Using Default Presets
-
-You can set a default preset in your `.env` file to automatically use a specific starter kit configuration:
-
-```env
-# Set Vue as the default preset
-UPSTREAM_DEFAULT_PRESET=vue
-
-# Or React
-UPSTREAM_DEFAULT_PRESET=react
-
-# Or Livewire
-UPSTREAM_DEFAULT_PRESET=livewire
-```
-
-With a default preset configured, you can simply run:
-
-```bash
-# Check for updates (uses default preset automatically)
-php artisan laravelplus:check
-
-# Upgrade if updates are available
-php artisan laravelplus:update
-```
-
-## Pull Request Workflow
-
-**This package creates pull requests by default** for safer updates in production environments. This ensures all upstream changes go through proper review:
-
-### Setup GitHub Integration
-
-1. **Create a GitHub Personal Access Token:**
-   - Go to GitHub Settings → Developer settings → Personal access tokens
-   - Generate a new token with `repo` permissions
-   - Add it to your `.env` file
-
-2. **Configure GitHub settings:**
-```env
-GITHUB_TOKEN=ghp_your_token_here
-GITHUB_OWNER=your_username
-GITHUB_REPO=your_repo_name
-```
-
-### Create Pull Requests
-
-```bash
-# Check for updates first
-php artisan laravelplus:check
-
-# Create a PR with upstream updates (default behavior)
-php artisan laravelplus:update
-
-# Test the configuration before creating the PR
+# Validate configuration and connectivity first
 php artisan laravelplus:update --test
 
-# Create PR with custom branch name
+# Custom PR branch, title, or body
 php artisan laravelplus:update --pr-branch=update-vue-starter-kit
+php artisan laravelplus:update --pr-title="Update from Vue starter kit"
+php artisan laravelplus:update --pr-body="Sync the latest upstream changes"
 
-# Create PR with custom title and body
-php artisan laravelplus:update --pr-title="Update from Vue starter kit" --pr-body="Sync latest changes from upstream"
-
-# For direct application (bypasses PR creation)
-php artisan laravelplus:update --direct
-```
-
-### PR Workflow Benefits
-
-- **🔒 Safer Updates** - Review changes before merging
-- **📝 Better Documentation** - PR descriptions and commit history
-- **👥 Team Collaboration** - Multiple reviewers can approve
-- **🔄 Easy Rollback** - Simple to revert if issues arise
-- **📊 Change Tracking** - Clear history of what changed and when
-
-### Advanced Usage
-
-#### Apply Changes Directly
-
-```bash
-php artisan laravelplus:update --direct
-```
-
-#### Test Before Updating
-
-```bash
-php artisan laravelplus:update --test
-```
-
-#### Dry Run (See What Would Happen)
-
-```bash
+# Preview without changing anything
 php artisan laravelplus:update --dry-run
 ```
 
-#### Use Rebase Strategy
+Before a real update (without `--dry-run`), the working tree must be clean. On a merge or rebase conflict, the command aborts the operation and restores your original branch; nothing is committed or pushed.
+
+### Apply Changes Directly
 
 ```bash
-php artisan laravelplus:update --strategy=rebase
+php artisan laravelplus:update --direct
 ```
 
-#### Override Upstream URL
+This merges or rebases the upstream changes into `UPSTREAM_LOCAL_BRANCH`, then runs `post_update` hooks. Review the result before pushing.
 
-```bash
-php artisan laravelplus:update --upstream=https://github.com/other/repo.git
-```
+### Update Options
 
-#### Skip Hooks
+| Option | Description |
+|--------|-------------|
+| `--direct` | Apply changes directly without creating a pull request |
+| `--dry-run` | Show what would happen without executing |
+| `--test` | Validate configuration and connectivity before updating |
+| `--no-pre` | Skip `pre_update` hooks |
+| `--no-post` | Skip `post_update` hooks |
+| `--strategy=` | Override the strategy (`merge` or `rebase`) |
+| `--upstream=` | Override the upstream URL |
+| `--branch=` | Override the upstream branch |
+| `--local=` | Override the local target branch |
+| `--remote-name=` | Remote name to use (default: `upstream`) |
+| `--pr-branch=` | Override the PR branch name |
+| `--pr-title=` | Override the PR title |
+| `--pr-body=` | Override the PR body |
+| `--force-push` | Push the PR branch with `--force-with-lease` |
 
-```bash
-php artisan laravelplus:update --no-pre --no-post
-```
+### Setup Options
 
-#### Custom Remote Name
-
-```bash
-php artisan laravelplus:update --remote-name=upstream
-```
-
-## Supported Laravel Starter Kits
-
-This package comes with pre-configured support for all official Laravel starter kits:
-
-### Official Laravel Starter Kits
-
-- **Vue Starter Kit** - [laravel/vue-starter-kit](https://github.com/laravel/vue-starter-kit)
-  - Vue 3 + Inertia.js + TypeScript + Tailwind CSS
-  - Perfect for modern SPA applications
-
-- **React Starter Kit** - [laravel/react-starter-kit](https://github.com/laravel/react-starter-kit)
-  - React 19 + Inertia.js + TypeScript + Tailwind CSS
-  - Ideal for React-based applications
-
-- **Livewire Starter Kit** - [laravel/livewire-starter-kit](https://github.com/laravel/livewire-starter-kit)
-  - Livewire 3 + Laravel Volt + TypeScript + Tailwind CSS
-  - Great for teams preferring PHP over JavaScript
-
-### Custom Starter Kits
-
-The package also supports any custom Laravel starter kit or repository:
-
-- **Custom Repositories** - Any Git repository URL
-- **Private Repositories** - GitHub, GitLab, Bitbucket private repos
-- **Self-hosted Git** - Your own Git server
-
-## Supported Platforms
-
-This package works with any Git-based repository hosting service:
-
-- **GitHub** - `https://github.com/user/repo.git`
-- **GitLab** - `https://gitlab.com/user/repo.git`
-- **Bitbucket** - `https://bitbucket.org/user/repo.git`
-- **Azure DevOps** - `https://dev.azure.com/org/project/_git/repo`
-- **Self-hosted Git** - Any Git server with HTTP/SSH access
-- **GitLab Self-hosted** - `https://your-gitlab.com/user/repo.git`
-- **Gitea/Gogs** - `https://your-gitea.com/user/repo.git`
-
-## Testing
-
-The package includes comprehensive testing functionality:
-
-- ✅ **Git Binary** - Verifies git is installed and accessible
-- ✅ **Working Directory** - Checks if the working directory exists and is writable
-- ✅ **Configuration** - Validates all required config values and strategy
-- ✅ **Remote Connectivity** - Tests if the upstream URL is reachable
-- ✅ **Branch Validation** - Verifies the upstream branch exists
-- ✅ **Local Repository** - Checks if current directory is a git repo
+| Option | Description |
+|--------|-------------|
+| `--preset=` | `vue`, `react`, `livewire`, or `custom` |
+| `--url=` | Upstream URL for a custom repository |
+| `--upstream-branch=` | Branch to pull from upstream |
+| `--local-branch=` | Local branch that receives updates |
 
 ## Hooks
 
-Configure pre and post-update hooks in your `config/upstream.php`:
+Configure shell hooks in `config/upstream.php`:
 
 ```php
 'pre_update' => [
@@ -468,195 +261,96 @@ Configure pre and post-update hooks in your `config/upstream.php`:
 ],
 ```
 
-> **Note:** `post_update` hooks are skipped when creating a pull request, because they would run against unmerged code (for example, migrations). They run with `laravelplus:update --direct`, after the changes have been merged locally. Preset hooks are applied automatically from `config/upstream.php`.
+`post_update` hooks are skipped in PR mode because the PR has not been merged yet and hooks such as migrations would run against unmerged code. They run with `laravelplus:update --direct`.
 
-## Authentication
+## Supported Starter Kits
 
-### HTTPS
-Uses your stored credentials or personal access tokens.
+The package includes presets for the official Laravel starter kits:
 
-### SSH (Recommended)
-Uses your SSH keys for authentication. Set up SSH keys for your Git hosting service.
+- **Vue** — [laravel/vue-starter-kit](https://github.com/laravel/vue-starter-kit)
+- **React** — [laravel/react-starter-kit](https://github.com/laravel/react-starter-kit)
+- **Livewire** — [laravel/livewire-starter-kit](https://github.com/laravel/livewire-starter-kit)
 
-### Personal Access Tokens
-For CI/CD environments, use personal access tokens in your repository URL:
-```
-https://username:token@github.com/user/repo.git
-```
+Any other Git repository can be used through the `custom` preset.
 
-## Available Commands
+## Supported Platforms
 
-### `laravelplus:setup`
-Interactive setup wizard for configuring the package. Run this once to get started.
+The sync itself works with any Git-based host:
 
-### `laravelplus:check`
-Check if there are updates available from upstream repository. Shows detailed information about available updates.
+- GitHub
+- GitLab (including self-hosted)
+- Bitbucket
+- Azure DevOps
+- Gitea and Gogs
+- Any self-hosted Git server with HTTP or SSH access
 
-### `laravelplus:update`
-Upgrade your project with the latest changes from upstream. **Creates PRs by default** (recommended and safest).
+Automatic pull-request creation through the GitHub API is GitHub-specific.
 
-### `laravelplus:update --direct`
-Apply changes directly without creating a pull request (use with caution).
+## Testing and Code Quality
 
-## Command Options
-
-| Option | Description |
-|--------|-------------|
-| `--direct` | Apply changes directly without creating a pull request |
-| `--dry-run` | Show what would happen without executing |
-| `--test` | Test configuration and connectivity before sync |
-| `--no-pre` | Skip pre_update hooks |
-| `--no-post` | Skip post_update hooks |
-| `--strategy=` | Override strategy (merge\|rebase) |
-| `--upstream=` | Override upstream URL |
-| `--branch=` | Override upstream branch |
-| `--local=` | Override local branch |
-| `--remote-name=` | Remote name to use (default: upstream) |
-| `--pr-branch=` | Override PR branch name |
-| `--pr-title=` | Override PR title |
-| `--pr-body=` | Override PR body |
-| `--force-push` | Force push the PR branch with `--force-with-lease` |
-
-## 🧪 Testing
-
-This package includes a comprehensive test suite covering all functionality:
-
-### Test Coverage
-- **Unit Tests** - Core components, services, and utilities
-- **Feature Tests** - Command integration and Laravel functionality
-- **Integration Tests** - Service provider and configuration
-- **Exception Tests** - Error handling and edge cases
-
-### Running Tests
 ```bash
-# Run all tests
+# Run all quality gates (Rector, Pint, PHPStan, Pest with coverage)
 composer test
 
-# Run specific test suites
-composer test:unit
-composer test:lint
-composer test:types
-
-# Run with coverage
-vendor/bin/pest --coverage
+# Run individual checks
+composer test:refactor   # Rector dry run
+composer test:lint       # Pint
+composer test:types      # PHPStan level 8
+composer test:unit       # Pest with coverage and parallel workers
 ```
 
-### Code Quality
-The package maintains high code quality standards with:
-- **PHPStan** - Static analysis (Level 8) with strict type checking
-- **Rector** - Code modernization and PHP 8.4 feature adoption
-- **Laravel Pint** - Code style enforcement with Laravel standards
-- **Pest PHP** - Modern testing framework with Laravel integration
+The coverage step requires PCOV or Xdebug. CI enables PCOV. Without a local coverage driver, run the suite directly:
 
-### Architecture Highlights
-- **Strict Types** - `declare(strict_types=1)` throughout the codebase
-- **Interface-based Design** - Clean contracts for all major components
-- **Service Layer** - Separated business logic from command classes
-- **Custom Exceptions** - Detailed error handling with specific exception types
-- **Trait-based Reusability** - Common functionality extracted into traits
-- **Constructor Property Promotion** - Modern PHP 8.4 syntax
-- **Readonly Properties** - Immutable data structures where appropriate
-
-## 🛠️ Development
-
-### Prerequisites
-- PHP 8.4+
-- Composer
-- Git
-
-### Development Setup
 ```bash
-# Clone the repository
+vendor/bin/pest --parallel
+```
+
+CI runs `composer test` for every combination of PHP 8.4/8.5 and Laravel 12/13. See [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+
+## Development
+
+```bash
 git clone https://github.com/yukazakiri/starterkit-updater.git
 cd starterkit-updater
-
-# Install dependencies
 composer install
-
-# Run tests
 composer test
-
-# Check code quality
-composer test:lint
-composer test:types
 ```
 
-### Contributing
-We welcome contributions! Please see our [Development Guide](DEVELOPMENT.md) for detailed information on:
-- Code style and standards
-- Testing requirements
-- Pull request process
-- Issue reporting
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the project structure, architecture notes, and contribution workflow.
 
-## Requirements
+## Troubleshooting
 
-- **PHP 8.4+** - Latest PHP features and performance
-- **Laravel 12.x or 13.x** - Older Laravel versions are not supported
-- **Git** - Installed and accessible in PATH
-- **Valid Git Repository** - Working directory must be a Git repository
-- **GitHub Token** - Required for automatic PR creation (optional for direct updates)
+### Composer installs the upstream package instead of this fork
+
+Make sure the VCS repository is declared in `composer.json` and require `dev-master` explicitly. Then run `composer update laravelplus/laravel-updater`.
+
+### "Already up to date" when changes are expected
+
+Check that `UPSTREAM_BRANCH` points to the branch you actually want in the upstream repository and that `UPSTREAM_LOCAL_BRANCH` is your current target branch.
+
+### The update refuses to run
+
+The updater requires a clean working tree. Commit or stash local changes first so unrelated files are not included in the sync.
+
+### No pull request is created
+
+Set `GITHUB_TOKEN`, or let `GITHUB_OWNER`/`GITHUB_REPO` be inferred from `origin`. Without a token, the branch is still pushed and a compare URL is printed.
+
+## Contributing
+
+Issues and pull requests are welcome in this fork:
+
+- [Report a bug or request a feature](https://github.com/yukazakiri/starterkit-updater/issues)
+- Fork the repository, create a feature branch, add tests, run `composer test`, and open a pull request.
+
+Please keep changes compatible with both Laravel 12 and 13.
 
 ## License
 
-This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This package is open-source software licensed under the [MIT license](LICENSE).
 
-## 📊 Package Statistics
+## Credits
 
-- **Comprehensive Test Suite** - Unit and feature coverage
-- **Modern Architecture** - PHP 8.4+ with Laravel 12/13 support
-- **PR-First Workflow** - Creates PRs by default for safer updates
-- **Code Quality** - PHPStan Level 8 + Rector + Pint
-- **Zero Dependencies** - Only Laravel framework dependencies
-- **Universal Support** - Works with any Git hosting service
-
-## 🤝 Contributing
-
-We welcome contributions from the community! Here's how you can help:
-
-### Ways to Contribute
-- 🐛 **Report Bugs** - Help us identify and fix issues
-- 💡 **Suggest Features** - Share your ideas for improvements
-- 📝 **Improve Documentation** - Help others understand the package
-- 🧪 **Add Tests** - Increase test coverage and reliability
-- 🔧 **Fix Issues** - Submit pull requests for bug fixes
-
-### Development Process
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-## 📈 Roadmap
-
-### Upcoming Features
-- 🔄 **GitLab Integration** - Direct GitLab API support
-- 📊 **Analytics Dashboard** - Track sync history and statistics
-- 🔔 **Notifications** - Slack/Discord integration for sync events
-- 🎨 **Custom Themes** - Beautiful command-line interfaces
-- 🔐 **Enhanced Security** - GPG signing and verification
-
-## 🏆 Credits
-
-- **[LaravelPlus](https://github.com/laravelplus)** - The LaravelPlus community
-- **[All Contributors](../../contributors)** - Thank you to everyone who contributes
-- **[Laravel Framework](https://laravel.com)** - Built on the amazing Laravel framework
-
-## 📞 Support
-
-### Getting Help
-- 📖 **Documentation** - Check this README and [DEVELOPMENT.md](DEVELOPMENT.md)
-- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/yukazakiri/starterkit-updater/issues)
-- 💬 **Discussions** - [GitHub Discussions](https://github.com/yukazakiri/starterkit-updater/discussions)
-- ⭐ **Star the Project** - Show your support!
-
-### Community
-Join the LaravelPlus community and help us build amazing Laravel tools:
-- 🌟 **Star us on GitHub** - Help us grow
-- 🐦 **Follow us** - Stay updated on new features
-- 💡 **Share feedback** - Help us improve
-
----
-
-**Made with ❤️ by the LaravelPlus community**
+- Originally created by [LaravelPlus](https://github.com/LaravelPlus).
+- This fork is maintained by [yukazakiri](https://github.com/yukazakiri).
+- Built on the [Laravel framework](https://laravel.com).
